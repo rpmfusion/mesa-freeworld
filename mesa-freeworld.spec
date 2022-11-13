@@ -56,7 +56,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 22.3.0-rc2
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        MIT
 URL:            http://www.mesa3d.org
 
@@ -283,7 +283,7 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
-* Sun Nov 13 2022 Vitaly Zaitsev <vitaly@easycoding.org> - 22.3.0~rc2-1
+* Sun Nov 13 2022 Vitaly Zaitsev <vitaly@easycoding.org> - 22.3.0~rc2-2
 - Updated to version 22.3.0-rc2.
 
 * Sun Nov 13 2022 Vitaly Zaitsev <vitaly@easycoding.org> - 22.2.3-1
