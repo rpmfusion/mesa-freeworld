@@ -72,10 +72,6 @@ Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 Patch10: 0001-Revert-glx-Guard-usage-of-infer_zink-explicit_zink-i.patch
 Patch11: 0002-Revert-egl-glx-add-fallback-for-zink-loading.patch
 
-# Patches from Karol Herbst to fix Nouveau multithreading:
-# https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/10752
-Patch0009: nouveau-multithreading-fixes.patch
-
 BuildRequires:  meson >= 0.45
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
