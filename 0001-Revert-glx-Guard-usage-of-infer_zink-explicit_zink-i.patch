@@ -1,0 +1,37 @@
+From a17c79c9df4a55ce9dfbe878d9cd19441a4e193e Mon Sep 17 00:00:00 2001
+From: Dave Airlie <airlied@redhat.com>
+Date: Thu, 10 Nov 2022 15:20:24 +1000
+Subject: [PATCH 1/2] Revert "glx: Guard usage of infer_zink && !explicit_zink
+ in glxext.c"
+
+This reverts commit ffab4c8cb7bc7362cd3318f39162a98629bd4d19.
+---
+ src/glx/glxext.c | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/src/glx/glxext.c b/src/glx/glxext.c
+index 7f2fc2a0691..156bfc90946 100644
+--- a/src/glx/glxext.c
++++ b/src/glx/glxext.c
+@@ -969,7 +969,6 @@ __glXInitialize(Display * dpy)
+ #endif
+ 
+    if (!AllocAndFetchScreenConfigs(dpy, dpyPriv)) {
+-#if defined(GLX_DIRECT_RENDERING) && !defined(GLX_USE_APPLEGL)
+       Bool fail = true;
+       /* if zink was inferred, retry without zink */
+       if (infer_zink && !explicit_zink) {
+@@ -981,10 +980,6 @@ __glXInitialize(Display * dpy)
+          free(dpyPriv);
+          return NULL;
+       }
+-#else
+-      free(dpyPriv);
+-      return NULL;
+-#endif
+    }
+ 
+    __glX_send_client_info(dpyPriv);
+-- 
+2.38.1
+

@@ -54,7 +54,7 @@
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 22.2.3
+%global ver 22.3.0-rc2
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT
@@ -68,15 +68,9 @@ Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
-# Patches from Karol Herbst to make Tegra work again:
-# https://bugzilla.redhat.com/show_bug.cgi?id=1989726#c46
-# see also:
-# https://gitlab.freedesktop.org/mesa/mesa/-/issues/5399
-# Last four revert https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/3724
-Patch0005: 0003-Revert-nouveau-Use-format-modifiers-in-buffer-alloca.patch
-Patch0006: 0004-Revert-nouveau-no-modifier-the-invalid-modifier.patch
-Patch0007: 0005-Revert-nouveau-Use-DRM_FORMAT_MOD_NVIDIA_BLOCK_LINEA.patch
-Patch0008: 0006-Revert-nouveau-Stash-supported-sector-layout-in-scre.patch
+# revert zink autoloader it breaks glxinfo in a VM
+Patch10: 0001-Revert-glx-Guard-usage-of-infer_zink-explicit_zink-i.patch
+Patch11: 0002-Revert-egl-glx-add-fallback-for-zink-loading.patch
 
 # Patches from Karol Herbst to fix Nouveau multithreading:
 # https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/10752
@@ -189,7 +183,6 @@ cp %{SOURCE1} docs/
   -Dgallium-drivers=swrast,virgl \
 %endif
   -Dgallium-vdpau=%{?with_vdpau:enabled}%{!?with_vdpau:disabled} \
-  -Dgallium-xvmc=disabled \
   -Dgallium-omx=%{!?with_omx:bellagio}%{?with_omx:disabled} \
   -Dgallium-va=%{?with_va:enabled}%{!?with_va:disabled} \
   -Dgallium-xa=%{!?with_xa:enabled}%{?with_xa:disabled} \
@@ -263,6 +256,7 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %if 0%{?with_va}
 %files -n %{srcname}-va-drivers-freeworld
 %license docs/license.rst
+%{_libdir}/dri/virtio_gpu_drv_video.so
 %{_libdir}/dri/nouveau_drv_video.so
 %if 0%{?with_r600}
 %{_libdir}/dri/r600_drv_video.so
@@ -276,6 +270,7 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %if 0%{?with_vdpau}
 %files -n %{srcname}-vdpau-drivers-freeworld
 %license docs/license.rst
+%{_libdir}/vdpau/libvdpau_virtio_gpu.so.1*
 %{_libdir}/vdpau/libvdpau_nouveau.so.1*
 %if 0%{?with_r300}
 %{_libdir}/vdpau/libvdpau_r300.so.1*
@@ -290,6 +285,9 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Sun Nov 13 2022 Vitaly Zaitsev <vitaly@easycoding.org> - 22.3.0~rc2-1
+- Updated to version 22.3.0-rc2.
+
 * Sun Nov 13 2022 Vitaly Zaitsev <vitaly@easycoding.org> - 22.2.3-1
 - Updated to version 22.2.3.
 

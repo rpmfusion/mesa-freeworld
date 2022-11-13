@@ -1,0 +1,133 @@
+From cb4d4c8e9c424969f2d7834e15fd8123dbbda84a Mon Sep 17 00:00:00 2001
+From: Dave Airlie <airlied@redhat.com>
+Date: Thu, 10 Nov 2022 15:27:08 +1000
+Subject: [PATCH 2/2] Revert "egl/glx: add fallback for zink loading"
+
+This reverts commit 2569215f43f6ce71fb8eb2181b36c6cf976bce2a.
+
+This break glxinfo in a swrast only VM for me on Fedora
+---
+ src/egl/main/eglapi.c | 22 ++++------------------
+ src/glx/drisw_glx.c   |  5 ++++-
+ src/glx/glxext.c      | 29 ++++++-----------------------
+ 3 files changed, 14 insertions(+), 42 deletions(-)
+
+diff --git a/src/egl/main/eglapi.c b/src/egl/main/eglapi.c
+index 15f6e2e173b..041f35aa7b6 100644
+--- a/src/egl/main/eglapi.c
++++ b/src/egl/main/eglapi.c
+@@ -701,26 +701,12 @@ eglInitialize(EGLDisplay dpy, EGLint *major, EGLint *minor)
+        * If the initialisation fails, try again using only software rendering.
+        */
+       if (!_eglDriver.Initialize(disp)) {
+-         bool fail = true;
+-         if (!disp->Options.ForceSoftware && !disp->Options.Zink &&
+-             !debug_get_bool_option("LIBGL_KOPPER_DISABLE", false) && !getenv("GALLIUM_DRIVER")) {
+-            /* zink fallback */
+-            disp->Options.Zink = EGL_TRUE;
++         if (disp->Options.ForceSoftware)
++            RETURN_EGL_ERROR(disp, EGL_NOT_INITIALIZED, EGL_FALSE);
++         else {
+             disp->Options.ForceSoftware = EGL_TRUE;
+-            fail = !_eglDriver.Initialize(disp);
+-            if (fail) {
+-               disp->Options.Zink = EGL_FALSE;
+-               disp->Options.ForceSoftware = EGL_FALSE;
+-            }
+-         }
+-         if (fail) {
+-            if (disp->Options.ForceSoftware)
++            if (!_eglDriver.Initialize(disp))
+                RETURN_EGL_ERROR(disp, EGL_NOT_INITIALIZED, EGL_FALSE);
+-            else {
+-               disp->Options.ForceSoftware = EGL_TRUE;
+-               if (!_eglDriver.Initialize(disp))
+-                  RETURN_EGL_ERROR(disp, EGL_NOT_INITIALIZED, EGL_FALSE);
+-            }
+          }
+       }
+ 
+diff --git a/src/glx/drisw_glx.c b/src/glx/drisw_glx.c
+index c124c62c31e..25d853fcd16 100644
+--- a/src/glx/drisw_glx.c
++++ b/src/glx/drisw_glx.c
+@@ -1054,8 +1054,11 @@ static struct glx_screen *
+ driswCreateScreen(int screen, struct glx_display *priv)
+ {
+    const struct drisw_display *pdpyp = (struct drisw_display *)priv->driswDisplay;
++   if (pdpyp->zink && !debug_get_bool_option("LIBGL_KOPPER_DISABLE", false)) {
++      return driswCreateScreenDriver(screen, priv, "zink");
++   }
+ 
+-   return driswCreateScreenDriver(screen, priv, pdpyp->zink ? "zink" : "swrast");
++    return driswCreateScreenDriver(screen, priv, "swrast");
+ }
+ 
+ /* Called from __glXFreeDisplayPrivate.
+diff --git a/src/glx/glxext.c b/src/glx/glxext.c
+index 156bfc90946..e4da247b349 100644
+--- a/src/glx/glxext.c
++++ b/src/glx/glxext.c
+@@ -923,9 +923,9 @@ __glXInitialize(Display * dpy)
+ #if defined(GLX_DIRECT_RENDERING) && !defined(GLX_USE_APPLEGL)
+    Bool glx_direct = !debug_get_bool_option("LIBGL_ALWAYS_INDIRECT", false);
+    Bool glx_accel = !debug_get_bool_option("LIBGL_ALWAYS_SOFTWARE", false);
++   Bool zink;
+    const char *env = getenv("MESA_LOADER_DRIVER_OVERRIDE");
+-   Bool explicit_zink = env && !strcmp(env, "zink");
+-   Bool infer_zink = false;
++   zink = env && !strcmp(env, "zink");
+ 
+    dpyPriv->drawHash = __glxHashCreate();
+ 
+@@ -940,25 +940,17 @@ __glXInitialize(Display * dpy)
+     ** (e.g., those called in AllocAndFetchScreenConfigs).
+     */
+ #if defined(GLX_USE_DRM)
+-   if (glx_direct && glx_accel && !explicit_zink) {
++   if (glx_direct && glx_accel && !zink) {
+ #if defined(HAVE_DRI3)
+       if (!debug_get_bool_option("LIBGL_DRI3_DISABLE", false))
+          dpyPriv->dri3Display = dri3_create_display(dpy);
+ #endif /* HAVE_DRI3 */
+       if (!debug_get_bool_option("LIBGL_DRI2_DISABLE", false))
+          dpyPriv->dri2Display = dri2CreateDisplay(dpy);
+-      /* zink fallback */
+-      if (!dpyPriv->dri3Display && !dpyPriv->dri2Display)
+-         infer_zink =  !debug_get_bool_option("LIBGL_KOPPER_DISABLE", false) && !getenv("GALLIUM_DRIVER");
+    }
+ #endif /* GLX_USE_DRM */
+    if (glx_direct)
+-      dpyPriv->driswDisplay = driswCreateDisplay(dpy, explicit_zink | infer_zink);
+-
+-#ifdef GLX_USE_WINDOWSGL
+-   if (glx_direct && glx_accel)
+-      dpyPriv->windowsdriDisplay = driwindowsCreateDisplay(dpy);
+-#endif
++      dpyPriv->driswDisplay = driswCreateDisplay(dpy, zink);
+ #endif /* GLX_DIRECT_RENDERING && !GLX_USE_APPLEGL */
+ 
+ #ifdef GLX_USE_APPLEGL
+@@ -969,17 +961,8 @@ __glXInitialize(Display * dpy)
+ #endif
+ 
+    if (!AllocAndFetchScreenConfigs(dpy, dpyPriv)) {
+-      Bool fail = true;
+-      /* if zink was inferred, retry without zink */
+-      if (infer_zink && !explicit_zink) {
+-         free(dpyPriv->screens);
+-         driswCreateDisplay(dpy, false);
+-         fail = !AllocAndFetchScreenConfigs(dpy, dpyPriv);
+-      }
+-      if (fail) {
+-         free(dpyPriv);
+-         return NULL;
+-      }
++      free(dpyPriv);
++      return NULL;
+    }
+ 
+    __glX_send_client_info(dpyPriv);
+-- 
+2.38.1
+
