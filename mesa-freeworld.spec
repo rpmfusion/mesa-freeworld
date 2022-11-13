@@ -143,6 +143,7 @@ algorithms and decoding only VC1 algorithm.
 Summary:        Mesa-based VA-API drivers
 Requires:       %{srcname}-filesystem%{?_isa} >= %{?epoch:%{epoch}:}%{version}
 Provides:       %{srcname}-va-drivers = %{?epoch:%{epoch}:}%{version}-%{release}
+Provides:       %{srcname}-va-drivers%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
 Enhances:       %{srcname}%{?_isa}
 
 %description    -n %{srcname}-va-drivers-freeworld
@@ -154,6 +155,7 @@ Enhances:       %{srcname}%{?_isa}
 Summary:        Mesa-based VDPAU drivers
 Requires:       %{srcname}-filesystem%{?_isa} >= %{?epoch:%{epoch}:}%{version}
 Provides:       %{srcname}-vdpau-drivers = %{?epoch:%{epoch}:}%{version}-%{release}
+Provides:       %{srcname}-vdpau-drivers%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
 Enhances:       %{srcname}%{?_isa}
 
 %description 	-n %{srcname}-vdpau-drivers-freeworld
