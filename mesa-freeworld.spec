@@ -1,4 +1,6 @@
 %global srcname mesa
+%global _description These drivers contains video acceleration codecs for decoding/encoding H.264 and H.265 \
+algorithms and decoding only VC1 algorithm.
 %ifnarch s390x
 %global with_hardware 1
 %global with_vulkan_hw 0
@@ -145,8 +147,7 @@ BuildRequires:  pkgconfig(vulkan)
 %endif
 
 %description
-These drivers contains video acceleration codecs for decoding/encoding H.264 and H.265
-algorithms and decoding only VC1 algorithm.
+%{_description}
 
 %if 0%{?with_va}
 %package        -n %{srcname}-va-drivers-freeworld
@@ -156,7 +157,7 @@ Provides:       %{srcname}-va-drivers = %{?epoch:%{epoch}:}%{version}-%{release}
 Enhances:       %{srcname}%{?_isa}
 
 %description    -n %{srcname}-va-drivers-freeworld
-%{description}
+%{_description}
 %endif
 
 %if 0%{?with_vdpau}
@@ -167,7 +168,7 @@ Provides:       %{srcname}-vdpau-drivers = %{?epoch:%{epoch}:}%{version}-%{relea
 Enhances:       %{srcname}%{?_isa}
 
 %description 	-n %{srcname}-vdpau-drivers-freeworld
-%{description}
+%{_description}
 %endif
 %prep
 %autosetup -n %{srcname}-%{ver} -p1
