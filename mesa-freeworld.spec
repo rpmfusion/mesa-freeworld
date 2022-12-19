@@ -19,7 +19,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_i915   0
 %global with_iris   0
 %global with_xa     0
-#%%global platform_vulkan ,intel
+#%%global platform_vulkan ,intel,intel_hasvk
 %endif
 
 %ifarch aarch64
@@ -56,9 +56,9 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 22.3.0-rc2
+%global ver 22.3.1
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        2%{?dist}
+Release:        1%{?dist}
 License:        MIT
 URL:            http://www.mesa3d.org
 
@@ -70,11 +70,9 @@ Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
-# revert zink autoloader it breaks glxinfo in a VM
-Patch10: 0001-Revert-glx-Guard-usage-of-infer_zink-explicit_zink-i.patch
-Patch11: 0002-Revert-egl-glx-add-fallback-for-zink-loading.patch
+Patch10:        gnome-shell-glthread-disable.patch
 
-BuildRequires:  meson >= 0.45
+BuildRequires:  meson >= 0.61.4
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  gettext
@@ -125,6 +123,14 @@ BuildRequires:  pkgconfig(libomxil-bellagio)
 BuildRequires:  pkgconfig(libelf)
 BuildRequires:  pkgconfig(libglvnd) >= 1.3.2
 BuildRequires:  llvm-devel >= 7.0.0
+%if 0%{?with_opencl}
+BuildRequires:  clang-devel
+BuildRequires:  bindgen
+BuildRequires:  rust-packaging
+BuildRequires:  pkgconfig(libclc)
+BuildRequires:  pkgconfig(SPIRV-Tools)
+BuildRequires:  pkgconfig(LLVMSPIRVLib)
+%endif
 %if %{with valgrind}
 BuildRequires:  pkgconfig(valgrind)
 %endif
@@ -187,6 +193,9 @@ cp %{SOURCE1} docs/
   -Dgallium-xa=%{!?with_xa:enabled}%{?with_xa:disabled} \
   -Dgallium-nine=%{!?with_nine:true}%{?with_nine:false} \
   -Dgallium-opencl=%{!?with_opencl:icd}%{?with_opencl:disabled} \
+%if 0%{?with_opencl}
+  -Dgallium-rusticl=true -Dllvm=enabled -Drust_std=2021 \
+%endif
   -Dvideo-codecs=h264dec,h264enc,h265dec,h265enc,vc1dec \
   -Dvulkan-drivers=%{?vulkan_drivers} \
   -Dvulkan-layers=device-select \
@@ -284,6 +293,10 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Mon Dec 19 2022 Thorsten Leemhuis <fedora@leemhuis.info> - 22.3.1-1
+- Update to 22.3.1
+- sync a few bits with Fedora's mesa.spec
+
 * Sun Nov 13 2022 Vitaly Zaitsev <vitaly@easycoding.org> - 22.3.0~rc2-2
 - Updated to version 22.3.0-rc2.
 
