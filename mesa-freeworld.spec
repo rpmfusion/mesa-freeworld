@@ -19,7 +19,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_i915   0
 %global with_iris   0
 %global with_xa     0
-#%%global platform_vulkan ,intel
+#%%global platform_vulkan ,intel,intel_hasvk
 %endif
 
 %ifarch aarch64
@@ -56,7 +56,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 22.2.3
+%global ver 22.3.1
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT
@@ -70,21 +70,9 @@ Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
-# Patches from Karol Herbst to make Tegra work again:
-# https://bugzilla.redhat.com/show_bug.cgi?id=1989726#c46
-# see also:
-# https://gitlab.freedesktop.org/mesa/mesa/-/issues/5399
-# Last four revert https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/3724
-Patch0005: 0003-Revert-nouveau-Use-format-modifiers-in-buffer-alloca.patch
-Patch0006: 0004-Revert-nouveau-no-modifier-the-invalid-modifier.patch
-Patch0007: 0005-Revert-nouveau-Use-DRM_FORMAT_MOD_NVIDIA_BLOCK_LINEA.patch
-Patch0008: 0006-Revert-nouveau-Stash-supported-sector-layout-in-scre.patch
+Patch10:        gnome-shell-glthread-disable.patch
 
-# Patches from Karol Herbst to fix Nouveau multithreading:
-# https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/10752
-Patch0009: nouveau-multithreading-fixes.patch
-
-BuildRequires:  meson >= 0.45
+BuildRequires:  meson >= 0.61.4
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  gettext
@@ -135,6 +123,14 @@ BuildRequires:  pkgconfig(libomxil-bellagio)
 BuildRequires:  pkgconfig(libelf)
 BuildRequires:  pkgconfig(libglvnd) >= 1.3.2
 BuildRequires:  llvm-devel >= 7.0.0
+%if 0%{?with_opencl}
+BuildRequires:  clang-devel
+BuildRequires:  bindgen
+BuildRequires:  rust-packaging
+BuildRequires:  pkgconfig(libclc)
+BuildRequires:  pkgconfig(SPIRV-Tools)
+BuildRequires:  pkgconfig(LLVMSPIRVLib)
+%endif
 %if %{with valgrind}
 BuildRequires:  pkgconfig(valgrind)
 %endif
@@ -192,12 +188,14 @@ cp %{SOURCE1} docs/
   -Dgallium-drivers=swrast,virgl \
 %endif
   -Dgallium-vdpau=%{?with_vdpau:enabled}%{!?with_vdpau:disabled} \
-  -Dgallium-xvmc=disabled \
   -Dgallium-omx=%{!?with_omx:bellagio}%{?with_omx:disabled} \
   -Dgallium-va=%{?with_va:enabled}%{!?with_va:disabled} \
   -Dgallium-xa=%{!?with_xa:enabled}%{?with_xa:disabled} \
   -Dgallium-nine=%{!?with_nine:true}%{?with_nine:false} \
   -Dgallium-opencl=%{!?with_opencl:icd}%{?with_opencl:disabled} \
+%if 0%{?with_opencl}
+  -Dgallium-rusticl=true -Dllvm=enabled -Drust_std=2021 \
+%endif
   -Dvideo-codecs=h264dec,h264enc,h265dec,h265enc,vc1dec \
   -Dvulkan-drivers=%{?vulkan_drivers} \
   -Dvulkan-layers=device-select \
@@ -265,7 +263,6 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 
 %if 0%{?with_va}
 %files -n %{srcname}-va-drivers-freeworld
-%license docs/license.rst
 %{_libdir}/dri/nouveau_drv_video.so
 %if 0%{?with_r600}
 %{_libdir}/dri/r600_drv_video.so
@@ -273,12 +270,13 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %if 0%{?with_radeonsi}
 %{_libdir}/dri/radeonsi_drv_video.so
 %endif
+%{_libdir}/dri/virtio_gpu_drv_video.so
 %{_metainfodir}/org.mesa3d.vaapi.freeworld.metainfo.xml
+%license docs/license.rst
 %endif
 
 %if 0%{?with_vdpau}
 %files -n %{srcname}-vdpau-drivers-freeworld
-%license docs/license.rst
 %{_libdir}/vdpau/libvdpau_nouveau.so.1*
 %if 0%{?with_r300}
 %{_libdir}/vdpau/libvdpau_r300.so.1*
@@ -289,10 +287,23 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %if 0%{?with_radeonsi}
 %{_libdir}/vdpau/libvdpau_radeonsi.so.1*
 %endif
+%{_libdir}/vdpau/libvdpau_virtio_gpu.so.1*
 %{_metainfodir}/org.mesa3d.vdpau.freeworld.metainfo.xml
+%license docs/license.rst
 %endif
 
 %changelog
+* Mon Dec 19 2022 Thorsten Leemhuis <fedora@leemhuis.info> - 22.3.1-1
+- adjust placement of a few files entries to stay in sync with Fedora; while at it
+  make it more obvious that the license files are specific to rpmfusion
+
+* Mon Dec 19 2022 Thorsten Leemhuis <fedora@leemhuis.info> - 22.3.1-1
+- Update to 22.3.1
+- sync a few bits with Fedora's mesa.spec
+
+* Sun Nov 13 2022 Vitaly Zaitsev <vitaly@easycoding.org> - 22.3.0~rc2-2
+- Updated to version 22.3.0-rc2.
+
 * Sun Nov 13 2022 Vitaly Zaitsev <vitaly@easycoding.org> - 22.2.3-1
 - Updated to version 22.2.3.
 
