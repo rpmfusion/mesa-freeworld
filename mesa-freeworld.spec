@@ -263,8 +263,6 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 
 %if 0%{?with_va}
 %files -n %{srcname}-va-drivers-freeworld
-%license docs/license.rst
-%{_libdir}/dri/virtio_gpu_drv_video.so
 %{_libdir}/dri/nouveau_drv_video.so
 %if 0%{?with_r600}
 %{_libdir}/dri/r600_drv_video.so
@@ -272,13 +270,13 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %if 0%{?with_radeonsi}
 %{_libdir}/dri/radeonsi_drv_video.so
 %endif
+%{_libdir}/dri/virtio_gpu_drv_video.so
 %{_metainfodir}/org.mesa3d.vaapi.freeworld.metainfo.xml
+%license docs/license.rst
 %endif
 
 %if 0%{?with_vdpau}
 %files -n %{srcname}-vdpau-drivers-freeworld
-%license docs/license.rst
-%{_libdir}/vdpau/libvdpau_virtio_gpu.so.1*
 %{_libdir}/vdpau/libvdpau_nouveau.so.1*
 %if 0%{?with_r300}
 %{_libdir}/vdpau/libvdpau_r300.so.1*
@@ -289,10 +287,16 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %if 0%{?with_radeonsi}
 %{_libdir}/vdpau/libvdpau_radeonsi.so.1*
 %endif
+%{_libdir}/vdpau/libvdpau_virtio_gpu.so.1*
 %{_metainfodir}/org.mesa3d.vdpau.freeworld.metainfo.xml
+%license docs/license.rst
 %endif
 
 %changelog
+* Mon Dec 19 2022 Thorsten Leemhuis <fedora@leemhuis.info> - 22.3.1-1
+- adjust placement of a few files entries to stay in sync with Fedora; while at it
+  make it more obvious that the license files are specific to rpmfusion
+
 * Mon Dec 19 2022 Thorsten Leemhuis <fedora@leemhuis.info> - 22.3.1-1
 - Update to 22.3.1
 - sync a few bits with Fedora's mesa.spec
