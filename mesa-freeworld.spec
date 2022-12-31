@@ -56,7 +56,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 22.3.1
+%global ver 22.3.2
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT
@@ -293,6 +293,9 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Sat Dec 31 2022 Thorsten Leemhuis <fedora@leemhuis.info> - 22.3.2-1
+- Update to 22.3.2
+
 * Mon Dec 19 2022 Thorsten Leemhuis <fedora@leemhuis.info> - 22.3.1-1
 - adjust placement of a few files entries to stay in sync with Fedora; while at it
   make it more obvious that the license files are specific to rpmfusion
