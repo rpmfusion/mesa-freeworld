@@ -56,9 +56,9 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 22.3.2
+%global ver 22.3.3
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        3%{?dist}
+Release:        1%{?dist}
 License:        MIT
 URL:            http://www.mesa3d.org
 
@@ -296,6 +296,9 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Thu Jan 12 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 22.3.3-1
+- Update to 22.3.3
+
 * Wed Jan 4 2023 Luya Tshimbalanga <luya@fedoraproject.org> - 22.3.2-3
 - fix typo on conflict condition for vdpau sub-package
 
