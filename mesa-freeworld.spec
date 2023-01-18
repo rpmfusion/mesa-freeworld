@@ -149,10 +149,6 @@ BuildRequires:  pkgconfig(vulkan)
 %package        -n %{srcname}-va-drivers-freeworld
 Summary:        Mesa-based VA-API drivers
 Requires:       %{srcname}-filesystem%{?_isa} >= %{?epoch:%{epoch}:}%{version}
-Provides:       %{srcname}-va-drivers%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
-# Prevents mesa from fedora repo to overwrite the update
-Conflicts:	%{srcname}-va-drivers%{?_isa} > %{?epoch:%{epoch}:}%{version}-%{release}
-Enhances:       %{srcname}%{?_isa}
 
 %description    -n %{srcname}-va-drivers-freeworld
 %{_description}
@@ -162,10 +158,6 @@ Enhances:       %{srcname}%{?_isa}
 %package        -n %{srcname}-vdpau-drivers-freeworld
 Summary:        Mesa-based VDPAU drivers
 Requires:       %{srcname}-filesystem%{?_isa} >= %{?epoch:%{epoch}:}%{version}
-Provides:       %{srcname}-vdpau-drivers%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
-# Prevents mesa from fedora repo to overwrite the update
-Conflicts:      %{srcname}-vdpau-drivers%{?_isa} > %{?epoch:%{epoch}:}%{version}-%{release}
-Enhances:       %{srcname}%{?_isa}
 
 %description 	-n %{srcname}-vdpau-drivers-freeworld
 %{_description}
@@ -296,6 +288,7 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %changelog
 * Tue Jan 17 2023 Luya Tshimbalanga <luya@fedoraproject.org> - 22.3.3-2
 - Fix dependencies issues between Fedora and RPM Fusion
+- Drop conflicts with provides
 
 * Thu Jan 12 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 22.3.3-1
 - Update to 22.3.3
