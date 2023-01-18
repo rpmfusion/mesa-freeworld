@@ -58,7 +58,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 22.3.3
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        2%{?dist}
+Release:        2%{?dist}.1
 License:        MIT
 URL:            http://www.mesa3d.org
 
@@ -294,6 +294,9 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Wed Jan 18 2023 Luya Tshimbalanga <luya@fedoraproject.org> - 22.3.3-2.1
+- Drop conflicts with provides
+
 * Tue Jan 17 2023 Luya Tshimbalanga <luya@fedoraproject.org> - 22.3.3-2
 - Fix dependencies issues between Fedora and RPM Fusion
 
