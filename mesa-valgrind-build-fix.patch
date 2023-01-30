@@ -1,0 +1,99 @@
+From 47bba327f44a801d41b9f52c900d75eb03dcb9f6 Mon Sep 17 00:00:00 2001
+From: Karol Herbst <kherbst@redhat.com>
+Date: Wed, 16 Nov 2022 11:50:51 +0100
+Subject: [PATCH] rusticl: fix build error with valgrind being enabled
+
+This bumps the meson requierement to 1.0 because it requires
+https://github.com/mesonbuild/meson/pull/11024
+
+Closes: https://gitlab.freedesktop.org/mesa/mesa/-/issues/7688
+Fixes: 20c90fed5a0 ("rusticl: added")
+Signed-off-by: Karol Herbst <kherbst@redhat.com>
+---
+ .gitlab-ci/container/debian/x86_build-base.sh | 4 ++--
+ .gitlab-ci/image-tags.yml                     | 2 +-
+ docs/rusticl.rst                              | 2 +-
+ meson.build                                   | 4 ++--
+ src/gallium/frontends/rusticl/meson.build     | 4 ++++
+ 5 files changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/.gitlab-ci/container/debian/x86_build-base.sh b/.gitlab-ci/container/debian/x86_build-base.sh
+index 215db4820d15..2332323fe1a6 100644
+--- a/.gitlab-ci/container/debian/x86_build-base.sh
++++ b/.gitlab-ci/container/debian/x86_build-base.sh
+@@ -78,8 +78,8 @@ apt-get install -y --no-remove \
+ # Needed for ci-fairy, this revision is able to upload files to MinIO
+ pip3 install git+http://gitlab.freedesktop.org/freedesktop/ci-templates@ffe4d1b10aab7534489f0c4bbc4c5899df17d3f2
+ 
+-# We need at least 0.61.4 for proper Rust; 0.62 for modern meson env2mfile
+-pip3 install meson==0.63.3
++# We need at least 1.0.0 for proper Rust; 0.62 for modern meson env2mfile
++pip3 install meson==1.0.0
+ 
+ . .gitlab-ci/container/build-rust.sh
+ 
+diff --git a/.gitlab-ci/image-tags.yml b/.gitlab-ci/image-tags.yml
+index 1ecfa6ff23e6..eba9fa486562 100644
+--- a/.gitlab-ci/image-tags.yml
++++ b/.gitlab-ci/image-tags.yml
+@@ -1,6 +1,6 @@
+ variables:
+    DEBIAN_X86_BUILD_BASE_IMAGE: "debian/x86_build-base"
+-   DEBIAN_BASE_TAG: "2023-01-10-robust-wget"
++   DEBIAN_BASE_TAG: "2023-01-25-rust-valgrind"
+ 
+    DEBIAN_X86_BUILD_IMAGE_PATH: "debian/x86_build"
+    DEBIAN_BUILD_TAG: "2023-01-09-lavacli"
+diff --git a/docs/rusticl.rst b/docs/rusticl.rst
+index 45f99bcca3cb..9217fc766af7 100644
+--- a/docs/rusticl.rst
++++ b/docs/rusticl.rst
+@@ -19,7 +19,7 @@ To build Rusticl you need to satisfy the following build dependencies:
+ The minimum versions to build Rusticl are:
+ 
+ -  Rust: 1.59
+--  Meson: 0.61.4
++-  Meson: 1.0.0
+ -  Bindgen: 0.58.0
+ -  LLVM: 11.0.0 (recommended: 15.0.0)
+ -  SPIRV-Tools: any version (recommended: v2022.3)
+diff --git a/meson.build b/meson.build
+index 17669575dc2d..8a3a5b7045de 100644
+--- a/meson.build
++++ b/meson.build
+@@ -784,8 +784,8 @@ if with_gallium_rusticl
+     error('rusticl requires at least one gallium driver.')
+   endif
+ 
+-  if meson.version().version_compare('< 0.61.4')
+-    error('rusticl requires meson 0.61.4 or newer')
++  if meson.version().version_compare('< 1.0.0')
++    error('rusticl requires meson 1.0.0 or newer')
+   endif
+ 
+   add_languages('rust', required: true)
+diff --git a/src/gallium/frontends/rusticl/meson.build b/src/gallium/frontends/rusticl/meson.build
+index 5bfa6faf5af3..e53b50a9b8b8 100644
+--- a/src/gallium/frontends/rusticl/meson.build
++++ b/src/gallium/frontends/rusticl/meson.build
+@@ -195,6 +195,7 @@ rusticl_mesa_bindings_inline_wrapper = static_library(
+   ],
+   dependencies: [
+     idep_nir_headers,
++    dep_valgrind,
+   ],
+ )
+ 
+@@ -209,6 +210,9 @@ rusticl_mesa_bindings_rs = rust.bindgen(
+     inc_nir,
+     inc_src,
+   ],
++  dependencies: [
++    dep_valgrind,
++  ],
+   c_args : [
+     rusticl_bindgen_c_args,
+     pre_args,
+-- 
+GitLab
+
