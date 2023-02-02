@@ -56,7 +56,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 23.0.0-rc3
+%global ver 23.0.0-rc4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}.1
 License:        MIT
@@ -71,14 +71,8 @@ Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
 Patch10:        gnome-shell-glthread-disable.patch
-# https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/19778
-Patch11:        mesa-valgrind-build-fix.patch
 
-# https://bugzilla.redhat.com/show_bug.cgi?id=2164667
-# https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/20933
-Patch12:        20933.patch
-
-BuildRequires:  meson >= 0.61.4
+BuildRequires:  meson >= 1.0.0
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  gettext
@@ -292,6 +286,9 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Thu Feb 2 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.0.0~rc4-1
+- Update to 23.0.0-rc4
+
 * Mon Jan 30 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.0.0~rc3-1
 - Update to 23.0.0-rc3
 
