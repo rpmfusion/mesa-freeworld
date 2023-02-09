@@ -58,7 +58,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 22.3.5
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}.1
+Release:        1%{?dist}
 License:        MIT
 URL:            http://www.mesa3d.org
 
