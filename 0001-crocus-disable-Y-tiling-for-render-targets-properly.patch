@@ -1,0 +1,31 @@
+From 9cd6cb449b4189472d57266e5c8e37c86271337b Mon Sep 17 00:00:00 2001
+From: Dave Airlie <airlied@redhat.com>
+Date: Thu, 9 Feb 2023 12:59:53 +1000
+Subject: [PATCH] crocus: disable Y tiling for render targets properly.
+
+The old code would disallow linear targets as well which would confuse
+things with reimporting dma-bufs.
+
+Fixes: 32728dc66e36 ("crocus: introduce main resource configuration helper.")
+---
+ src/gallium/drivers/crocus/crocus_resource.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/src/gallium/drivers/crocus/crocus_resource.c b/src/gallium/drivers/crocus/crocus_resource.c
+index 7b4d50a6648..4f548eb7364 100644
+--- a/src/gallium/drivers/crocus/crocus_resource.c
++++ b/src/gallium/drivers/crocus/crocus_resource.c
+@@ -190,9 +190,7 @@ crocus_resource_configure_main(const struct crocus_screen *screen,
+       tiling_flags = 1 << res->mod_info->tiling;
+    } else {
+       if (templ->bind & PIPE_BIND_RENDER_TARGET && devinfo->ver < 6) {
+-         modifier = I915_FORMAT_MOD_X_TILED;
+-         res->mod_info = isl_drm_modifier_get_info(modifier);
+-         tiling_flags = 1 << res->mod_info->tiling;
++         tiling_flags &= ~ISL_TILING_Y0_BIT;
+       }
+       /* Use linear for staging buffers */
+       if (templ->usage == PIPE_USAGE_STAGING ||
+-- 
+2.39.1
+

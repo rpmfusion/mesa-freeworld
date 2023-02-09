@@ -56,7 +56,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 22.3.4
+%global ver 22.3.5
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}.1
 License:        MIT
@@ -70,7 +70,8 @@ Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
-Patch10:        gnome-shell-glthread-disable.patch
+# fix crocus gnome-shell/webrtc captures
+Patch1:         0001-crocus-disable-Y-tiling-for-render-targets-properly.patch
 
 BuildRequires:  meson >= 0.61.4
 BuildRequires:  gcc
@@ -294,6 +295,9 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Thu Feb 09 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 22.3.5-1
+- Update to 22.3.5
+
 * Mon Jan 30 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 22.3.4-1
 - Update to 22.3.4
 
