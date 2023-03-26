@@ -56,7 +56,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 22.3.7
+%global ver 23.0.1
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT
@@ -70,7 +70,9 @@ Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
-BuildRequires:  meson >= 0.61.4
+Patch10:        gnome-shell-glthread-disable.patch
+
+BuildRequires:  meson >= 1.0.0
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  gettext
@@ -147,10 +149,6 @@ BuildRequires:  pkgconfig(vulkan)
 %package        -n %{srcname}-va-drivers-freeworld
 Summary:        Mesa-based VA-API drivers
 Requires:       %{srcname}-filesystem%{?_isa} >= %{?epoch:%{epoch}:}%{version}
-Provides:       %{srcname}-va-drivers%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
-# Prevents mesa from fedora repo to overwrite the update
-Conflicts:	%{srcname}-va-drivers%{?_isa} > %{?epoch:%{epoch}:}%{version}-%{release}
-Enhances:       %{srcname}%{?_isa}
 
 %description    -n %{srcname}-va-drivers-freeworld
 %{_description}
@@ -160,10 +158,6 @@ Enhances:       %{srcname}%{?_isa}
 %package        -n %{srcname}-vdpau-drivers-freeworld
 Summary:        Mesa-based VDPAU drivers
 Requires:       %{srcname}-filesystem%{?_isa} >= %{?epoch:%{epoch}:}%{version}
-Provides:       %{srcname}-vdpau-drivers%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
-# Prevents mesa from fedora repo to overwrite the update
-Conflicts:      %{srcname}-vdpau-drivers%{?_isa} > %{?epoch:%{epoch}:}%{version}-%{release}
-Enhances:       %{srcname}%{?_isa}
 
 %description 	-n %{srcname}-vdpau-drivers-freeworld
 %{_description}
@@ -292,6 +286,11 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Sat Mar 25 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.0.1
+- Update to 23.0.1 and sync spec file with F38 (and thus drop some
+  Provides/Conflicts/Enhances tags that likely create more problems then
+  they solved)
+
 * Thu Feb 23 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 22.3.7-1
 - Update to 22.3.7
 
