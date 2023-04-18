@@ -148,7 +148,7 @@ BuildRequires:  pkgconfig(vulkan)
 %if 0%{?with_va}
 %package        -n %{srcname}-va-drivers-freeworld
 Summary:        Mesa-based VA-API drivers
-Requires:       %{srcname}-filesystem%{?_isa} >= %{?epoch:%{epoch}:}%{version}
+Requires:       %{srcname}-filesystem%{?_isa} = %{?epoch:%{epoch}:}%{version}
 
 %description    -n %{srcname}-va-drivers-freeworld
 %{_description}
@@ -157,7 +157,7 @@ Requires:       %{srcname}-filesystem%{?_isa} >= %{?epoch:%{epoch}:}%{version}
 %if 0%{?with_vdpau}
 %package        -n %{srcname}-vdpau-drivers-freeworld
 Summary:        Mesa-based VDPAU drivers
-Requires:       %{srcname}-filesystem%{?_isa} >= %{?epoch:%{epoch}:}%{version}
+Requires:       %{srcname}-filesystem%{?_isa} = %{?epoch:%{epoch}:}%{version}
 
 %description 	-n %{srcname}-vdpau-drivers-freeworld
 %{_description}
