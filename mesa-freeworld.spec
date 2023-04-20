@@ -58,7 +58,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 23.0.2
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}
+Release:        1%{?dist}.1
 License:        MIT
 URL:            http://www.mesa3d.org
 
@@ -288,6 +288,10 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Thu Apr 20 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.0.2-1.1
+- Re-introduce Conflicts (rfbz#6612, kwizard)
+- Enforces version to avoid miss-match with fedora (rfbz#6613, kwizard)
+
 * Thu Apr 13 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.0.2-1
 - Update to 23.0.2
 
