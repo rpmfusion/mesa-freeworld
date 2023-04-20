@@ -58,7 +58,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 23.0.2
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}
+Release:        1%{?dist}.1
 License:        MIT
 URL:            http://www.mesa3d.org
 
@@ -148,7 +148,8 @@ BuildRequires:  pkgconfig(vulkan)
 %if 0%{?with_va}
 %package        -n %{srcname}-va-drivers-freeworld
 Summary:        Mesa-based VA-API drivers
-Requires:       %{srcname}-filesystem%{?_isa} >= %{?epoch:%{epoch}:}%{version}
+Requires:       %{srcname}-filesystem%{?_isa} = %{?epoch:%{epoch}:}%{version}
+Conflicts:      %{srcname}-va-drivers%{?_isa}
 
 %description    -n %{srcname}-va-drivers-freeworld
 %{_description}
@@ -157,7 +158,8 @@ Requires:       %{srcname}-filesystem%{?_isa} >= %{?epoch:%{epoch}:}%{version}
 %if 0%{?with_vdpau}
 %package        -n %{srcname}-vdpau-drivers-freeworld
 Summary:        Mesa-based VDPAU drivers
-Requires:       %{srcname}-filesystem%{?_isa} >= %{?epoch:%{epoch}:}%{version}
+Requires:       %{srcname}-filesystem%{?_isa} = %{?epoch:%{epoch}:}%{version}
+Conflicts:      %{srcname}-vdpau-drivers%{?_isa}
 
 %description 	-n %{srcname}-vdpau-drivers-freeworld
 %{_description}
@@ -286,6 +288,10 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Thu Apr 20 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.0.2-1.1
+- Re-introduce Conflicts (rfbz#6612, kwizart)
+- Enforces version to avoid miss-match with fedora (rfbz#6613, kwizart)
+
 * Thu Apr 13 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.0.2-1
 - Update to 23.0.2
 
