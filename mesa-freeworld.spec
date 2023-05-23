@@ -138,7 +138,6 @@ BuildRequires:  pkgconfig(LLVMSPIRVLib)
 BuildRequires:  pkgconfig(valgrind)
 %endif
 BuildRequires:  python3-devel
-BuildRequires:  python3-dataclasses
 BuildRequires:  python3-mako
 %if 0%{?with_intel_clc}
 BuildRequires:  python3-ply
