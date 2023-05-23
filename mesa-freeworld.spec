@@ -17,6 +17,9 @@ algorithms and decoding only VC1 algorithm.
 %ifarch %{ix86} x86_64
 %global with_crocus 0
 %global with_i915   0
+%if !0%{?rhel}
+%global with_intel_clc 0
+%endif
 %global with_iris   0
 %global with_xa     0
 #%%global platform_vulkan ,intel,intel_hasvk
@@ -56,7 +59,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 23.0.3
+%global ver 23.1.0
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT
@@ -134,8 +137,12 @@ BuildRequires:  pkgconfig(LLVMSPIRVLib)
 %if %{with valgrind}
 BuildRequires:  pkgconfig(valgrind)
 %endif
-BuildRequires:  pkgconfig(python3)
-BuildRequires:  python3dist(mako)
+BuildRequires:  python3-devel
+BuildRequires:  python3-dataclasses
+BuildRequires:  python3-mako
+%if 0%{?with_intel_clc}
+BuildRequires:  python3-ply
+%endif
 BuildRequires:  vulkan-headers
 BuildRequires:  glslang
 %if 0%{?with_vulkan_hw}
@@ -190,7 +197,7 @@ cp %{SOURCE1} docs/
   -Dgallium-nine=%{!?with_nine:true}%{?with_nine:false} \
   -Dgallium-opencl=%{!?with_opencl:icd}%{?with_opencl:disabled} \
 %if 0%{?with_opencl}
-  -Dgallium-rusticl=true -Dllvm=enabled -Drust_std=2021 \
+  -Dgallium-rusticl=true \
 %endif
   -Dvideo-codecs=h264dec,h264enc,h265dec,h265enc,vc1dec \
   -Dvulkan-drivers=%{?vulkan_drivers} \
@@ -203,6 +210,9 @@ cp %{SOURCE1} docs/
   -Dglx=dri \
   -Degl=disabled \
   -Dglvnd=false \
+%if 0%{?with_intel_clc}
+  -Dintel-clc=enabled \
+%endif
   -Dmicrosoft-clc=disabled \
   -Dllvm=enabled \
   -Dshared-llvm=enabled \
@@ -288,6 +298,10 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Tue May 23 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.1.0-1
+- Update to 23.1.0
+- sync a few spec file bits with Fedora's mesa package
+
 * Tue Apr 25 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.0.3-1
 - Update to 23.0.3
 
