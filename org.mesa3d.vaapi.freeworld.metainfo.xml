@@ -5,10 +5,10 @@
   <summary>Video Acceleration API Driver</summary>
   <description>
     <p>
-      The Mesa VA-API (Video Acceleration API)
-      user mode driver brings hardware accelerated decoding, encoding,
-      and video post processing for AMD graphics processing units and NVIDIA 
-      counterpart running on Nouveau driver. The drive provides support for H264, AVC  and VC-1.
+      The Mesa VA-API State Tracker (Video Acceleration API)
+      user mode driver brings hardware accelerated decoding, encoding implementation on
+      and video post processing for Gallium AMD drivers and for NVIDIA counterpart running on Nouveau Gallium driver. 
+      This driver provides support for H264, H265 and VC-1.
     </p>
   </description>
   <translation/>
