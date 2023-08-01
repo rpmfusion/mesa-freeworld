@@ -7,7 +7,7 @@
     <p>
       The Mesa VA-API State Tracker (Video Acceleration API)
       user mode driver brings hardware accelerated decoding, encoding implementation on
-      and video post processing for Gallium AMD drivers and for NVIDIA counterpart running on Nouveau Gallium driver. 
+      and video post processing for Gallium AMD drivers.
       This driver provides support for H264, H265 and VC-1.
     </p>
   </description>
