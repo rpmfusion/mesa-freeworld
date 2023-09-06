@@ -22,10 +22,10 @@ algorithms and decoding only VC1 algorithm.
 %endif
 %global with_iris   0
 %global with_xa     0
-#%%global platform_vulkan ,intel,intel_hasvk
+#%%global intel_platform_vulkan ,intel,intel_hasvk
 %endif
 
-%ifarch aarch64
+%ifarch aarch64 x86_64 %{ix86}
 %if !0%{?rhel}
 %global with_etnaviv   0
 %global with_lima      0
@@ -37,7 +37,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_panfrost  0
 %global with_tegra     0
 %global with_xa        0
-#%%global platform_vulkan ,broadcom,freedreno,panfrost
+#%%global extra_platform_vulkan ,broadcom,freedreno,panfrost
 %endif
 
 %ifnarch s390x
@@ -60,11 +60,11 @@ algorithms and decoding only VC1 algorithm.
 %bcond_with valgrind
 %endif
 
-#%%global vulkan_drivers swrast%%{?base_vulkan}%%{?platform_vulkan}
+#%%global vulkan_drivers swrast%%{?base_vulkan}%%{?intel_platform_vulkan}%%{?extra_platform_vulkan}
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 23.2.0-rc2
+%global ver 23.2.0-rc3
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT
@@ -80,7 +80,7 @@ Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
 Patch10:        gnome-shell-glthread-disable.patch
 
-BuildRequires:  meson >= 1.0.0
+BuildRequires:  meson >= 1.2.0
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  gettext
@@ -316,6 +316,10 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Fri Aug 11 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.2.0~rc3.1
+- Update to 23.2.0-rc3
+- sync a few spec file bits with Fedora's mesa package
+
 * Fri Aug 11 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.2.0~rc1.1
 - Update to 23.2.0-rc2
 
