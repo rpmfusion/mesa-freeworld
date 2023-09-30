@@ -64,7 +64,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 23.2.0-rc3
+%global ver 23.2.1
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT
@@ -316,7 +316,10 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
-* Fri Aug 11 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.2.0~rc3.1
+* Sat Sep 30 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.2.1-1
+- Update to 23.2.1
+
+* Wed Sep 6 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.2.0~rc3.1
 - Update to 23.2.0-rc3
 - sync a few spec file bits with Fedora's mesa package
 
