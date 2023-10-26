@@ -64,9 +64,9 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 23.2.1
+%global ver 23.3.0-rc1
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        2%{?dist}
+Release:        1%{?dist}
 License:        MIT
 URL:            http://www.mesa3d.org
 
@@ -78,11 +78,6 @@ Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
-# https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/24045
-# https://bugzilla.redhat.com/show_bug.cgi?id=2238711
-# fixes a symbol name collision between iris and radeonsi drivers
-# expected to fix the crashes reported in #2238711
-Patch0:         0001-radeonsi-prefix-function-with-si_-to-prevent-name-co.patch
 Patch10:        gnome-shell-glthread-disable.patch
 
 BuildRequires:  meson >= 1.2.0
@@ -323,6 +318,9 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Thu Oct 26 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.3.0~rc1-1
+- Update to 23.2.0-rc2
+
 * Tue Oct 10 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.2.1-2
 - follow Fedora: backport MR #24045 to fix Iris crashes (RHBZ#2238711)
 - temporarily hard require llvm16, as that's what's used by fedora
