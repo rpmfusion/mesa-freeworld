@@ -2,6 +2,7 @@
 <!-- Copyright 2022 Luya Tshimbalanga <luya_tfz@thefinalzone.net> -->
 <component type="driver">
   <id>org.mesa3d.vaapi.freeworld</id>
+  <name>Video Acceleration API</name>
   <summary>Video Acceleration API Driver</summary>
   <description>
     <p>
@@ -14,7 +15,7 @@
   <translation/>
   <url type="homepage">https://github.com/intel/intel-media-driver</url>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>LicenseRef:MIT</project_license>
+  <project_license>MIT</project_license>
   <developer_name>MESA 3D</developer_name>
   <keywords>
     <keyword>AMD</keyword>
@@ -34,5 +35,5 @@
     <keyword>vp9</keyword>
   </keywords>
   <url type="bugtracker">https://bugzilla.rpmfusion.org</url>
-  <update_contact>intel-media-driver-owner@rpmfusion.org</update_contact>
+  <update_contact>mesa-freeworld-owner@rpmfusion.org</update_contact>
 </component>
