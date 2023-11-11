@@ -6,9 +6,10 @@
   <summary>Accelerated Linux Graphics Driver</summary>
   <description>
     <p>
-      The Mesa VA-API (Video Decode and Presentation API for UNIX)
-      user mode driver provides an interface to video decode acceleration and           presentation hardware present in AMD graphics processing units and NVIDIA 
-      counterpart running on Nouveau driver. The drive provides support for H264, AVC  and VC-1.
+      The Mesa VDPAU State Tracker (Video Decode and Presentation API for UNIX DRIVER)
+      user mode driver brings hardware accelerated decoding, encoding implementation and
+      presentation API for Gallium AMD drivers and for NVIDIA counterpart running on Nouveau Gallium driver. 
+      This driver provides support for H264, H265 and VC-1.
     </p>
   </description>
   <translation/>
