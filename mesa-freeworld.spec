@@ -27,15 +27,15 @@ algorithms and decoding only VC1 algorithm.
 
 %ifarch aarch64 x86_64 %{ix86}
 %if !0%{?rhel}
-%global with_etnaviv   0
 %global with_lima      0
 %global with_vc4       0
-%global with_v3d       0
 %endif
+%global with_etnaviv   0
 %global with_freedreno 0
 %global with_kmsro     0
 %global with_panfrost  0
 %global with_tegra     0
+%global with_v3d       0
 %global with_xa        0
 #%%global extra_platform_vulkan ,broadcom,freedreno,panfrost
 %endif
@@ -66,7 +66,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 23.3.0
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        MIT
 URL:            http://www.mesa3d.org
 
@@ -137,9 +137,7 @@ BuildRequires:  pkgconfig(libomxil-bellagio)
 %endif
 BuildRequires:  pkgconfig(libelf)
 BuildRequires:  pkgconfig(libglvnd) >= 1.3.2
-# BuildRequires:  llvm-devel >= 7.0.0
-# to match fedora's build temporarily require llvm16
-BuildRequires:  %{_libdir}/llvm16/lib/libLLVM.so
+BuildRequires:  llvm-devel >= 7.0.0
 %if 0%{?with_opencl}
 BuildRequires:  clang-devel
 BuildRequires:  bindgen
@@ -242,6 +240,9 @@ export RUSTFLAGS="%build_rustflags"
   -Dlmsensors=disabled \
 %endif
   -Dandroid-libbacktrace=disabled \
+%ifarch %{ix86}
+  -Dglx-read-only-text=true
+%endif
   %{nil}
 %meson_build
 
@@ -318,6 +319,9 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Fri Dec 15 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.3.0-2
+- sync a few bit with fedora's mesa.spec
+
 * Fri Dec 1 2023 Thorsten Leemhuis <fedora@leemhuis.info> - 23.3.0-1
 - Update to 23.3.0
 
