@@ -37,7 +37,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_tegra     0
 %global with_v3d       0
 %global with_xa        0
-#%%global extra_platform_vulkan ,broadcom,freedreno,panfrost
+#%%global extra_platform_vulkan ,broadcom,freedreno,panfrost,imagination-experimental
 %endif
 
 %ifnarch s390x
@@ -64,7 +64,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 23.3.3
+%global ver 24.0.0-rc2
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT
@@ -77,8 +77,6 @@ Source0:        https://archive.mesa3d.org/%{srcname}-%{ver}.tar.xz
 Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
-
-Patch10:        gnome-shell-glthread-disable.patch
 
 BuildRequires:  meson >= 1.2.0
 BuildRequires:  gcc
@@ -319,6 +317,9 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Fri Jan 19 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.0~rc2-1
+- Update to 23.3.0-rc2
+
 * Thu Jan 11 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 23.3.3-1
 - Update to 23.3.3
 
