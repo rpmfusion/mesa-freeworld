@@ -8,6 +8,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_va 1
 %if !0%{?rhel}
 %global with_nine 0
+%global with_nvk %{with vulkan_hw}
 %global with_omx 0
 %global with_opencl 0
 %endif
@@ -60,11 +61,11 @@ algorithms and decoding only VC1 algorithm.
 %bcond_with valgrind
 %endif
 
-#%%global vulkan_drivers swrast%%{?base_vulkan}%%{?intel_platform_vulkan}%%{?extra_platform_vulkan}
+#%%global vulkan_drivers swrast%%{?base_vulkan}%%{?intel_platform_vulkan}%%{?extra_platform_vulkan}%%{?with_nvk:,nouveau-experimental}
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.0.0-rc2
+%global ver 24.0.0
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT
@@ -78,7 +79,7 @@ Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
-BuildRequires:  meson >= 1.2.0
+BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  gettext
@@ -136,13 +137,19 @@ BuildRequires:  pkgconfig(libomxil-bellagio)
 BuildRequires:  pkgconfig(libelf)
 BuildRequires:  pkgconfig(libglvnd) >= 1.3.2
 BuildRequires:  llvm-devel >= 7.0.0
-%if 0%{?with_opencl}
+%if 0%{?with_opencl} || 0%{?with_nvk}
 BuildRequires:  clang-devel
 BuildRequires:  bindgen
 BuildRequires:  rust-packaging
 BuildRequires:  pkgconfig(libclc)
 BuildRequires:  pkgconfig(SPIRV-Tools)
 BuildRequires:  pkgconfig(LLVMSPIRVLib)
+%endif
+%if 0%{?with_nvk}
+BuildRequires:  (crate(proc-macro2) >= 1.0.56 with crate(proc-macro2) < 2)
+BuildRequires:  (crate(quote) >= 1.0.25 with crate(quote) < 2)
+BuildRequires:  (crate(syn/clone-impls) >= 2.0.15 with crate(syn/clone-impls) < 3)
+BuildRequires:  (crate(unicode-ident) >= 1.0.6 with crate(unicode-ident) < 2)
 %endif
 %if %{with valgrind}
 BuildRequires:  pkgconfig(valgrind)
@@ -317,8 +324,11 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Fri Feb 02 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.0-1
+- Update to 24.0.0
+
 * Fri Jan 19 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.0~rc2-1
-- Update to 23.3.0-rc2
+- Update to 24.0.0-rc2
 
 * Thu Jan 11 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 23.3.3-1
 - Update to 23.3.3
