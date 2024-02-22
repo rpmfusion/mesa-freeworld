@@ -67,7 +67,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 24.0.0
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        MIT
 URL:            http://www.mesa3d.org
 
@@ -218,7 +218,7 @@ export RUSTFLAGS="%build_rustflags"
 %if 0%{?with_opencl}
   -Dgallium-rusticl=true \
 %endif
-  -Dvideo-codecs=h264dec,h264enc,h265dec,h265enc,vc1dec \
+  -Dvideo-codecs=h264dec,h264enc,h265dec,h265enc,vc1dec,av1dec,av1enc,vp9dec \
   -Dvulkan-drivers=%{?vulkan_drivers} \
   -Dvulkan-layers=device-select \
   -Dshared-glapi=enabled \
@@ -324,6 +324,9 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Thu Feb 22 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.0-2
+- enable vp9, av1 codecs due to new meson build flag (#6873)
+
 * Fri Feb 02 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.0-1
 - Update to 24.0.0
 
