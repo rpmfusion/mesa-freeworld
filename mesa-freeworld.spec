@@ -8,7 +8,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_va 1
 %if !0%{?rhel}
 %global with_nine 0
-%global with_nvk %{with vulkan_hw}
+%global with_nvk 0
 %global with_omx 0
 %global with_opencl 0
 %endif
@@ -67,7 +67,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 24.0.2
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        2%{?dist}
+Release:        3%{?dist}
 License:        MIT
 URL:            http://www.mesa3d.org
 
@@ -324,7 +324,10 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
-* Wed Mar 6 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.2-1
+* Wed Mar 6 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.2-3
+- Disable nvk explicitly to avoid BR on rust-packaging
+
+* Wed Mar 6 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.2-2
 - Update to 24.0.2
 
 * Thu Feb 22 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.0-2
