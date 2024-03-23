@@ -67,7 +67,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 24.0.0
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        2%{?dist}
+Release:        3%{?dist}
 License:        MIT
 URL:            http://www.mesa3d.org
 
@@ -136,7 +136,9 @@ BuildRequires:  pkgconfig(libomxil-bellagio)
 %endif
 BuildRequires:  pkgconfig(libelf)
 BuildRequires:  pkgconfig(libglvnd) >= 1.3.2
-BuildRequires:  llvm-devel >= 7.0.0
+#BuildRequires:  llvm-devel >= 7.0.0
+# temporarily require llvm17 to match Fedora's F40 mesa build
+BuildRequires:  llvm17-devel >= 7.0.0
 %if 0%{?with_opencl} || 0%{?with_nvk}
 BuildRequires:  clang-devel
 BuildRequires:  bindgen
@@ -324,6 +326,9 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Sat Mar 23 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.0-3
+- temporarily BuildRequire llvm17 to match Fedora's build env
+
 * Thu Feb 22 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.0-2
 - enable vp9, av1 codecs due to new meson build flag (#6873)
 
