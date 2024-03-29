@@ -8,7 +8,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_va 1
 %if !0%{?rhel}
 %global with_nine 0
-%global with_nvk %{with vulkan_hw}
+%global with_nvk 0
 %global with_omx 0
 %global with_opencl 0
 %endif
@@ -65,9 +65,9 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.0.0
+%global ver 24.0.3
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        3%{?dist}
+Release:        1%{?dist}
 License:        MIT
 URL:            http://www.mesa3d.org
 
@@ -136,9 +136,7 @@ BuildRequires:  pkgconfig(libomxil-bellagio)
 %endif
 BuildRequires:  pkgconfig(libelf)
 BuildRequires:  pkgconfig(libglvnd) >= 1.3.2
-#BuildRequires:  llvm-devel >= 7.0.0
-# temporarily require llvm17 to match Fedora's F40 mesa build
-BuildRequires:  llvm17-devel >= 7.0.0
+BuildRequires:  llvm-devel >= 7.0.0
 %if 0%{?with_opencl} || 0%{?with_nvk}
 BuildRequires:  clang-devel
 BuildRequires:  bindgen
@@ -326,6 +324,11 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
+* Fri Mar 29 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.3-1
+- Update to 24.0.3
+- Use default LLVM again, just like Fedora's latest package
+- Disable nvk explicitly to avoid BR on rust-packaging
+
 * Sat Mar 23 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.0-3
 - temporarily BuildRequire llvm17 to match Fedora's build env
 
