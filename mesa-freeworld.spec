@@ -65,7 +65,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.0.3
+%global ver 24.0.4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT
@@ -324,13 +324,17 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %license docs/license.rst
 %endif
 %changelog
-* Fri Mar 29 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.3-1
+* Mon Apr 1 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.4-1
+- Update to 24.0.4
+
+* Thu Mar 14 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.3-1
 - Update to 24.0.3
-- Use default LLVM again, just like Fedora's latest package
+
+* Wed Mar 6 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.2-3
 - Disable nvk explicitly to avoid BR on rust-packaging
 
-* Sat Mar 23 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.0-3
-- temporarily BuildRequire llvm17 to match Fedora's build env
+* Wed Mar 6 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.2-2
+- Update to 24.0.2
 
 * Thu Feb 22 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.0-2
 - enable vp9, av1 codecs due to new meson build flag (#6873)
