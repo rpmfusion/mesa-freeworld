@@ -3,10 +3,14 @@
 algorithms and decoding only VC1 algorithm.
 %ifnarch s390x
 %global with_hardware 1
+%global with_radeonsi 1
+%global with_vmware 1
 %global with_vulkan_hw 0
 %global with_vdpau 1
 %global with_va 1
 %if !0%{?rhel}
+%global with_r300 1
+%global with_r600 1
 %global with_nine 0
 %global with_nvk 0
 %global with_omx 0
@@ -18,11 +22,11 @@ algorithms and decoding only VC1 algorithm.
 %ifarch %{ix86} x86_64
 %global with_crocus 0
 %global with_i915   0
+%global with_iris   0
+%global with_xa     0
 %if !0%{?rhel}
 %global with_intel_clc 0
 %endif
-%global with_iris   0
-%global with_xa     0
 #%%global intel_platform_vulkan ,intel,intel_hasvk
 %endif
 #%%ifarch x86_64
@@ -42,15 +46,6 @@ algorithms and decoding only VC1 algorithm.
 %global with_v3d       0
 %global with_xa        0
 #%%global extra_platform_vulkan ,broadcom,freedreno,panfrost,imagination-experimental
-%endif
-
-%ifnarch s390x
-%if !0%{?rhel}
-%global with_r300 1
-%global with_r600 1
-%endif
-%global with_radeonsi 1
-%global with_vmware 1
 %endif
 
 %if !0%{?rhel}
@@ -96,11 +91,6 @@ BuildRequires:  pkgconfig(libdrm) >= 2.4.97
 %if 0%{?with_libunwind}
 BuildRequires:  pkgconfig(libunwind)
 %endif
-BuildRequires:  clang-devel
-BuildRequires:  bindgen
-BuildRequires:  pkgconfig(libclc)
-BuildRequires:  pkgconfig(SPIRV-Tools)
-BuildRequires:  pkgconfig(LLVMSPIRVLib)
 BuildRequires:  pkgconfig(expat)
 BuildRequires:  pkgconfig(zlib) >= 1.2.3
 BuildRequires:  pkgconfig(libzstd)
@@ -145,13 +135,15 @@ BuildRequires:  pkgconfig(libomxil-bellagio)
 BuildRequires:  pkgconfig(libelf)
 BuildRequires:  pkgconfig(libglvnd) >= 1.3.2
 BuildRequires:  llvm-devel >= 7.0.0
-%if 0%{?with_opencl} || 0%{?with_nvk}
+%ifarch %{ix86}
 BuildRequires:  clang-devel
 BuildRequires:  bindgen
-BuildRequires:  rust-packaging
 BuildRequires:  pkgconfig(libclc)
 BuildRequires:  pkgconfig(SPIRV-Tools)
 BuildRequires:  pkgconfig(LLVMSPIRVLib)
+%endif
+%if 0%{?with_opencl} || 0%{?with_nvk}
+BuildRequires:  rust-packaging
 %endif
 %if 0%{?with_nvk}
 BuildRequires:  cbindgen
