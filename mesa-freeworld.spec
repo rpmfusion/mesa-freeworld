@@ -25,6 +25,9 @@ algorithms and decoding only VC1 algorithm.
 %global with_xa     0
 #%%global intel_platform_vulkan ,intel,intel_hasvk
 %endif
+#%%ifarch x86_64
+%global with_intel_vk_rt 0
+#%%endif
 
 %ifarch aarch64 x86_64 %{ix86}
 %if !0%{?rhel}
@@ -65,10 +68,10 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.1.0-rc2
+%global ver 24.1.0-rc3
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
-License:        MIT
+License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
 Source0:        https://archive.mesa3d.org/%{srcname}-%{ver}.tar.xz
@@ -93,6 +96,11 @@ BuildRequires:  pkgconfig(libdrm) >= 2.4.97
 %if 0%{?with_libunwind}
 BuildRequires:  pkgconfig(libunwind)
 %endif
+BuildRequires:  clang-devel
+BuildRequires:  bindgen
+BuildRequires:  pkgconfig(libclc)
+BuildRequires:  pkgconfig(SPIRV-Tools)
+BuildRequires:  pkgconfig(LLVMSPIRVLib)
 BuildRequires:  pkgconfig(expat)
 BuildRequires:  pkgconfig(zlib) >= 1.2.3
 BuildRequires:  pkgconfig(libzstd)
@@ -235,6 +243,7 @@ export RUSTFLAGS="%build_rustflags"
 %if 0%{?with_intel_clc}
   -Dintel-clc=enabled \
 %endif
+  -Dintel-rt=%{!?with_intel_vk_rt:enabled}%{?with_intel_vk_rt:disabled} \
   -Dmicrosoft-clc=disabled \
   -Dllvm=enabled \
   -Dshared-llvm=enabled \
@@ -250,9 +259,6 @@ export RUSTFLAGS="%build_rustflags"
   -Dandroid-libbacktrace=disabled \
 %ifarch %{ix86}
   -Dglx-read-only-text=true \
-%endif
-%ifnarch x86_64
-  -Dintel-rt=disabled \
 %endif
   %{nil}
 %meson_build
@@ -331,6 +337,12 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Thu May 9 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0~rc3-1
+- Update to 24.1.0-rc3
+- Sync with_intel_vk_rt bits with mesa.spec from fedora
+- Unconditionally BR clang-devel, bindgen, libclc, SPIRV-Tools, and
+  LLVMSPIRVLib which are needed now
+
 * Tue May 7 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0~rc2-1
 - Update to 24.1.0-rc2
 
