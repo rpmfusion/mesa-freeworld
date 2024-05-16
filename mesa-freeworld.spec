@@ -19,6 +19,12 @@ algorithms and decoding only VC1 algorithm.
 #%%global base_vulkan ,amd
 %endif
 
+%ifnarch %{ix86}
+%if !0%{?rhel}
+%global with_teflon 0
+%endif
+%endif
+
 %ifarch %{ix86} x86_64
 %global with_crocus 0
 %global with_i915   0
@@ -63,7 +69,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.1.0-rc3
+%global ver 24.1.0-rc4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -135,12 +141,17 @@ BuildRequires:  pkgconfig(libomxil-bellagio)
 BuildRequires:  pkgconfig(libelf)
 BuildRequires:  pkgconfig(libglvnd) >= 1.3.2
 BuildRequires:  llvm-devel >= 7.0.0
-%ifarch %{ix86}
+%ifarch %{ix86} x86_64
 BuildRequires:  clang-devel
 BuildRequires:  bindgen
 BuildRequires:  pkgconfig(libclc)
 BuildRequires:  pkgconfig(SPIRV-Tools)
 BuildRequires:  pkgconfig(LLVMSPIRVLib)
+%endif
+%if 0%{?with_teflon}
+BuildRequires:  flatbuffers-devel
+BuildRequires:  flatbuffers-compiler
+BuildRequires:  xtensor-devel
 %endif
 %if 0%{?with_opencl} || 0%{?with_nvk}
 BuildRequires:  rust-packaging
@@ -217,6 +228,7 @@ export RUSTFLAGS="%build_rustflags"
   -Dgallium-va=%{?with_va:enabled}%{!?with_va:disabled} \
   -Dgallium-xa=%{!?with_xa:enabled}%{?with_xa:disabled} \
   -Dgallium-nine=%{!?with_nine:true}%{?with_nine:false} \
+  -Dteflon=%{!?with_teflon:true}%{?with_teflon:false} \
   -Dgallium-opencl=%{!?with_opencl:icd}%{?with_opencl:disabled} \
 %if 0%{?with_opencl}
   -Dgallium-rusticl=true \
@@ -329,6 +341,10 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Thu May 16 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0~rc4-1
+- Update to 24.1.0-rc4
+- Sync a few more bits with mesa.spec from fedora
+
 * Thu May 9 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0~rc3-1
 - Update to 24.1.0-rc3
 - Sync with_intel_vk_rt bits with mesa.spec from fedora
