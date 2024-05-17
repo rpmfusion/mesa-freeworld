@@ -341,7 +341,7 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
-* Fri May 16 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0~rc4-2
+* Fri May 17 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0~rc4-2
 - disable teflon on ix86, too
 
 * Thu May 16 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0~rc4-1
