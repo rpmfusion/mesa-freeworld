@@ -19,7 +19,7 @@ algorithms and decoding only VC1 algorithm.
 #%%global base_vulkan ,amd
 %endif
 
-#%%ifnarch %{ix86}
+#%%ifnarch %%{ix86}
 %if !0%{?rhel}
 %global with_teflon 0
 %endif
