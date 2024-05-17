@@ -19,11 +19,11 @@ algorithms and decoding only VC1 algorithm.
 #%%global base_vulkan ,amd
 %endif
 
-%ifnarch %{ix86}
+#%%ifnarch %{ix86}
 %if !0%{?rhel}
 %global with_teflon 0
 %endif
-%endif
+#%%endif
 
 %ifarch %{ix86} x86_64
 %global with_crocus 0
@@ -71,7 +71,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 24.1.0-rc4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -341,6 +341,9 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Fri May 16 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0~rc4-2
+- disable teflon on ix86, too
+
 * Thu May 16 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0~rc4-1
 - Update to 24.1.0-rc4
 - Sync a few more bits with mesa.spec from fedora
