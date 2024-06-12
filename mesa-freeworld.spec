@@ -3,10 +3,14 @@
 algorithms and decoding only VC1 algorithm.
 %ifnarch s390x
 %global with_hardware 1
+%global with_radeonsi 1
+%global with_vmware 1
 %global with_vulkan_hw 0
 %global with_vdpau 1
 %global with_va 1
 %if !0%{?rhel}
+%global with_r300 1
+%global with_r600 1
 %global with_nine 0
 %global with_nvk 0
 %global with_omx 0
@@ -15,16 +19,25 @@ algorithms and decoding only VC1 algorithm.
 #%%global base_vulkan ,amd
 %endif
 
+#%%ifnarch %%{ix86}
+%if !0%{?rhel}
+%global with_teflon 0
+%endif
+#%%endif
+
 %ifarch %{ix86} x86_64
 %global with_crocus 0
 %global with_i915   0
+%global with_iris   0
+%global with_xa     0
 %if !0%{?rhel}
 %global with_intel_clc 0
 %endif
-%global with_iris   0
-%global with_xa     0
 #%%global intel_platform_vulkan ,intel,intel_hasvk
 %endif
+#%%ifarch x86_64
+%global with_intel_vk_rt 0
+#%%endif
 
 %ifarch aarch64 x86_64 %{ix86}
 %if !0%{?rhel}
@@ -41,15 +54,6 @@ algorithms and decoding only VC1 algorithm.
 #%%global extra_platform_vulkan ,broadcom,freedreno,panfrost,imagination-experimental
 %endif
 
-%ifnarch s390x
-%if !0%{?rhel}
-%global with_r300 1
-%global with_r600 1
-%endif
-%global with_radeonsi 1
-%global with_vmware 1
-%endif
-
 %if !0%{?rhel}
 %global with_libunwind 1
 %global with_lmsensors 1
@@ -61,14 +65,14 @@ algorithms and decoding only VC1 algorithm.
 %bcond_with valgrind
 %endif
 
-#%%global vulkan_drivers swrast%%{?base_vulkan}%%{?intel_platform_vulkan}%%{?extra_platform_vulkan}%%{?with_nvk:,nouveau-experimental}
+#%%global vulkan_drivers swrast%%{?base_vulkan}%%{?intel_platform_vulkan}%%{?extra_platform_vulkan}%%{?with_nvk:,nouveau}
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.0.9
+%global ver 24.1.1
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
-License:        MIT
+License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
 Source0:        https://archive.mesa3d.org/%{srcname}-%{ver}.tar.xz
@@ -137,15 +141,24 @@ BuildRequires:  pkgconfig(libomxil-bellagio)
 BuildRequires:  pkgconfig(libelf)
 BuildRequires:  pkgconfig(libglvnd) >= 1.3.2
 BuildRequires:  llvm-devel >= 7.0.0
-%if 0%{?with_opencl} || 0%{?with_nvk}
+%ifarch %{ix86} x86_64
 BuildRequires:  clang-devel
 BuildRequires:  bindgen
-BuildRequires:  rust-packaging
 BuildRequires:  pkgconfig(libclc)
 BuildRequires:  pkgconfig(SPIRV-Tools)
 BuildRequires:  pkgconfig(LLVMSPIRVLib)
 %endif
+%if 0%{?with_teflon}
+BuildRequires:  flatbuffers-devel
+BuildRequires:  flatbuffers-compiler
+BuildRequires:  xtensor-devel
+%endif
+%if 0%{?with_opencl} || 0%{?with_nvk}
+BuildRequires:  rust-packaging
+%endif
 %if 0%{?with_nvk}
+BuildRequires:  cbindgen
+BuildRequires:  (crate(paste) >= 1.0.14 with crate(paste) < 2)
 BuildRequires:  (crate(proc-macro2) >= 1.0.56 with crate(proc-macro2) < 2)
 BuildRequires:  (crate(quote) >= 1.0.25 with crate(quote) < 2)
 BuildRequires:  (crate(syn/clone-impls) >= 2.0.15 with crate(syn/clone-impls) < 3)
@@ -159,6 +172,7 @@ BuildRequires:  python3-mako
 %if 0%{?with_intel_clc}
 BuildRequires:  python3-ply
 %endif
+BuildRequires:  python3-pycparser
 BuildRequires:  vulkan-headers
 BuildRequires:  glslang
 %if 0%{?with_vulkan_hw}
@@ -214,6 +228,7 @@ export RUSTFLAGS="%build_rustflags"
   -Dgallium-va=%{?with_va:enabled}%{!?with_va:disabled} \
   -Dgallium-xa=%{!?with_xa:enabled}%{?with_xa:disabled} \
   -Dgallium-nine=%{!?with_nine:true}%{?with_nine:false} \
+  -Dteflon=%{!?with_teflon:true}%{?with_teflon:false} \
   -Dgallium-opencl=%{!?with_opencl:icd}%{?with_opencl:disabled} \
 %if 0%{?with_opencl}
   -Dgallium-rusticl=true \
@@ -232,6 +247,7 @@ export RUSTFLAGS="%build_rustflags"
 %if 0%{?with_intel_clc}
   -Dintel-clc=enabled \
 %endif
+  -Dintel-rt=%{!?with_intel_vk_rt:enabled}%{?with_intel_vk_rt:disabled} \
   -Dmicrosoft-clc=disabled \
   -Dllvm=enabled \
   -Dshared-llvm=enabled \
@@ -246,7 +262,7 @@ export RUSTFLAGS="%build_rustflags"
 %endif
   -Dandroid-libbacktrace=disabled \
 %ifarch %{ix86}
-  -Dglx-read-only-text=true
+  -Dglx-read-only-text=true \
 %endif
   %{nil}
 %meson_build
@@ -325,14 +341,27 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
-* Fri Jun 7 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.9-1
-- Update to 24.0.9
+* Thu Jun 06 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.1-1
+- Update to 24.1.1
 
-* Thu May 23 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.8-1
-- Update to 24.0.8
+* Thu May 23 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0-1
+- Update to 24.1.0
 
-* Fri May 10 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.7-1
-- Update to 24.0.7
+* Fri May 17 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0~rc4-2
+- disable teflon on ix86, too
+
+* Thu May 16 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0~rc4-1
+- Update to 24.1.0-rc4
+- Sync a few more bits with mesa.spec from fedora
+
+* Thu May 9 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0~rc3-1
+- Update to 24.1.0-rc3
+- Sync with_intel_vk_rt bits with mesa.spec from fedora
+- Unconditionally BR clang-devel, bindgen, libclc, SPIRV-Tools, and
+  LLVMSPIRVLib which are needed now
+
+* Tue May 7 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.0~rc2-1
+- Update to 24.1.0-rc2
 
 * Thu Apr 25 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.0.6-1
 - Update to 24.0.6
