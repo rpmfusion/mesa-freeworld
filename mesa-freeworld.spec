@@ -83,8 +83,8 @@ Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
-Patch:          0001-llvmpipe-Init-eglQueryDmaBufModifiersEXT-num_modifie.patch
-Patch:          0001-Revert-ac-radeonsi-remove-has_syncobj-has_fence_to_h.patch            
+Patch10:          0001-llvmpipe-Init-eglQueryDmaBufModifiersEXT-num_modifie.patch
+Patch11:          0001-Revert-ac-radeonsi-remove-has_syncobj-has_fence_to_h.patch
 
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
