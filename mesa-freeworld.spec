@@ -69,9 +69,9 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.1.2
+%global ver 24.1.4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        2%{?dist}
+Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -82,9 +82,6 @@ Source0:        https://archive.mesa3d.org/%{srcname}-%{ver}.tar.xz
 Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
-
-Patch11:        0001-llvmpipe-Init-eglQueryDmaBufModifiersEXT-num_modifie.patch
-Patch12:        0001-Revert-ac-radeonsi-remove-has_syncobj-has_fence_to_h.patch
 
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
@@ -344,6 +341,10 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Thu Jul 18 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.4-1
+- Update to 24.1.4
+- Drop upstreamed patched
+
 * Mon Jul 01 2024 Leigh Scott <leigh123linux@gmail.com> - 24.1.2-2
 - Fix mutter crash when calling eglQueryDmaBufModifiersEXT
 - Fix GNOME and KDE crash with some AMD GPUs
