@@ -69,7 +69,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.1.6
+%global ver 24.1.7
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -341,6 +341,9 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Thu Aug 29 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.7-1
+- Update to 24.1.7
+
 * Mon Aug 19 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.1.6-1
 - Update to 24.1.6
 
