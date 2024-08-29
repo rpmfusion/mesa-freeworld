@@ -12,11 +12,13 @@ algorithms and decoding only VC1 algorithm.
 %global with_r300 1
 %global with_r600 1
 %global with_nine 0
+#%%if 0%%{?with_vulkan_hw}
 %global with_nvk 0
+#%%endif
 %global with_omx 0
 %global with_opencl 0
 %endif
-#%%global base_vulkan ,amd
+#%%global base_vulkan %%{?with_vulkan_hw:,amd}%%{!?with_vulkan_hw:%%{nil}}
 %endif
 
 #%%ifnarch %%{ix86}
@@ -33,10 +35,12 @@ algorithms and decoding only VC1 algorithm.
 %if !0%{?rhel}
 %global with_intel_clc 0
 %endif
-#%%global intel_platform_vulkan ,intel,intel_hasvk
+#%%global intel_platform_vulkan %%{?with_vulkan_hw:,intel,intel_hasvk}%%{!?with_vulkan_hw:%%{nil}}
 %endif
 #%%ifarch x86_64
+#%%if !0%%{?with_vulkan_hw}
 %global with_intel_vk_rt 0
+#%%endif
 #%%endif
 
 %ifarch aarch64 x86_64 %{ix86}
@@ -51,7 +55,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_tegra     0
 %global with_v3d       0
 %global with_xa        0
-#%%global extra_platform_vulkan ,broadcom,freedreno,panfrost,imagination-experimental
+#%%global extra_platform_vulkan %%{?with_vulkan_hw:,broadcom,freedreno,panfrost,imagination-experimental}%%{!?with_vulkan_hw:%%{nil}}
 %endif
 
 %if !0%{?rhel}
@@ -69,7 +73,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.2.0
+%global ver 24.2.1
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -345,6 +349,10 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Thu Aug 29 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.2.1-1
+- Update to 24.2.1
+- Sync a few bits with mesa.spec from fedora
+
 * Mon Aug 19 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.2.0-1
 - Update to 24.2.0
 
