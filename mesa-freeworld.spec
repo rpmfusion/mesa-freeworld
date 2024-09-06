@@ -13,7 +13,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_r600 1
 %global with_nine 0
 #%%if 0%%{?with_vulkan_hw}
-%global with_nvk 0
+%global with_nvk %{with_vulkan_hw}
 #%%endif
 %global with_omx 0
 %global with_opencl 0
@@ -32,9 +32,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_i915   0
 %global with_iris   0
 %global with_xa     0
-%if !0%{?rhel}
 %global with_intel_clc 0
-%endif
 #%%global intel_platform_vulkan %%{?with_vulkan_hw:,intel,intel_hasvk}%%{!?with_vulkan_hw:%%{nil}}
 %endif
 #%%ifarch x86_64
@@ -44,15 +42,15 @@ algorithms and decoding only VC1 algorithm.
 #%%endif
 
 %ifarch aarch64 x86_64 %{ix86}
+%global with_kmsro     0
 %if !0%{?rhel}
 %global with_lima      0
 %global with_vc4       0
-%endif
 %global with_etnaviv   0
-%global with_freedreno 0
-%global with_kmsro     0
-%global with_panfrost  0
 %global with_tegra     0
+%endif
+%global with_freedreno 0
+%global with_panfrost  0
 %global with_v3d       0
 %global with_xa        0
 #%%global extra_platform_vulkan %%{?with_vulkan_hw:,broadcom,freedreno,panfrost,imagination-experimental}%%{!?with_vulkan_hw:%%{nil}}
@@ -73,7 +71,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.2.1
+%global ver 24.2.2
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -97,7 +95,7 @@ BuildRequires:  kernel-headers
 # We only check for the minimum version of pkgconfig(libdrm) needed so that the
 # SRPMs for each arch still have the same build dependencies. See:
 # https://bugzilla.redhat.com/show_bug.cgi?id=1859515
-BuildRequires:  pkgconfig(libdrm) >= 2.4.97
+BuildRequires:  pkgconfig(libdrm) >= 2.4.122
 %if 0%{?with_libunwind}
 BuildRequires:  pkgconfig(libunwind)
 %endif
@@ -106,7 +104,7 @@ BuildRequires:  pkgconfig(zlib) >= 1.2.3
 BuildRequires:  pkgconfig(libzstd)
 BuildRequires:  pkgconfig(libselinux)
 BuildRequires:  pkgconfig(wayland-scanner)
-BuildRequires:  pkgconfig(wayland-protocols) >= 1.8
+BuildRequires:  pkgconfig(wayland-protocols) >= 1.34
 BuildRequires:  pkgconfig(wayland-client) >= 1.11
 BuildRequires:  pkgconfig(wayland-server) >= 1.11
 BuildRequires:  pkgconfig(wayland-egl-backend) >= 3
@@ -145,20 +143,20 @@ BuildRequires:  pkgconfig(libomxil-bellagio)
 BuildRequires:  pkgconfig(libelf)
 BuildRequires:  pkgconfig(libglvnd) >= 1.3.2
 BuildRequires:  llvm-devel >= 7.0.0
+%if 0%{?with_teflon}
+BuildRequires:  flatbuffers-devel
+BuildRequires:  flatbuffers-compiler
+BuildRequires:  xtensor-devel
+%endif
+%if 0%{?with_opencl} || 0%{?with_nvk} || 0%{?with_intel_clc}
+BuildRequires:  rust-packaging
+%endif
 %ifarch %{ix86} x86_64
 BuildRequires:  clang-devel
 BuildRequires:  bindgen
 BuildRequires:  pkgconfig(libclc)
 BuildRequires:  pkgconfig(SPIRV-Tools)
 BuildRequires:  pkgconfig(LLVMSPIRVLib)
-%endif
-%if 0%{?with_teflon}
-BuildRequires:  flatbuffers-devel
-BuildRequires:  flatbuffers-compiler
-BuildRequires:  xtensor-devel
-%endif
-%if 0%{?with_opencl} || 0%{?with_nvk}
-BuildRequires:  rust-packaging
 %endif
 %if 0%{?with_nvk}
 BuildRequires:  cbindgen
@@ -349,6 +347,10 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Fri Sep 6 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.2.2-1
+- Update to 24.2.2
+- Sync a few bits with mesa.spec from fedora
+
 * Thu Aug 29 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.2.1-1
 - Update to 24.2.1
 - Sync a few bits with mesa.spec from fedora
