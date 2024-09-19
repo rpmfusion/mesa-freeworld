@@ -339,7 +339,6 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %if 0%{?with_radeonsi}
 %{_libdir}/vdpau/libvdpau_radeonsi.so.1*
 %endif
-%{_libdir}/vdpau/libvdpau_gallium.so.1*
 %{_libdir}/vdpau/libvdpau_virtio_gpu.so.1*
 %{_metainfodir}/org.mesa3d.vdpau.freeworld.metainfo.xml
 %license docs/license.rst
