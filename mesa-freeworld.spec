@@ -325,7 +325,6 @@ rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
 %if 0%{?with_radeonsi}
 %{_libdir}/dri/radeonsi_drv_video.so
 %endif
-%{_libdir}/dri/libgallium_drv_video.so
 %{_libdir}/dri/virtio_gpu_drv_video.so
 %{_metainfodir}/org.mesa3d.vaapi.freeworld.metainfo.xml
 %license docs/license.rst
