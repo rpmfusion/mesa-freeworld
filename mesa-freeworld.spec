@@ -313,7 +313,7 @@ rm -fr %{buildroot}%{_libdir}/libOSMesa.so*
 rm -fr %{buildroot}%{_libdir}/pkgconfig/osmesa.pc
 rm -fr %{buildroot}%{_libdir}/libgbm.so*
 rm -fr %{buildroot}%{_includedir}/gbm.h
-rm -fr %{buildroot}%{_libdir}/libxatracker.so*
+rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libxatracker.so*
 rm -fr %{buildroot}%{_includedir}/xa_*.h
 rm -fr %{buildroot}%{_libdir}/libMesaOpenCL.so*
 rm -fr %{buildroot}%{_libdir}/dri/*_dri.so
