@@ -73,7 +73,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 24.2.3
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -350,6 +350,9 @@ rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Fri Sep 20 2024 Nicolas Chauvet <kwizart@gmail.com> - 24.2.3-2
+- Attempt to complement Fedora
+
 * Thu Sep 19 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.2.3-1
 - Update to 24.2.3
 - Sync a few bits with mesa.spec from fedora
