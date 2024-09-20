@@ -218,6 +218,10 @@ export RUSTFLAGS="%build_rustflags"
 %define _lto_cflags %{nil}
 
 %meson \
+  --libdir=%{_libdir}/dri-freeworld \
+  -Dvdpau-libs-path=%{_libdir}/vdpau \
+  -Ddri-drivers-path=%{_libdir}/dri-freeworld \
+  -Dva-libs-path=%{_libdir}/dri-freeworld \
   -Dplatforms=x11,wayland \
   -Ddri3=enabled \
   -Dosmesa=false \
@@ -299,12 +303,12 @@ popd
 
 # strip unneeded files from va-api and vdpau
 rm -rf %{buildroot}%{_datadir}/{drirc.d,glvnd,vulkan}
-rm -rf %{buildroot}%{_libdir}/{d3d,EGL,gallium-pipe,libGLX,pkgconfig}
+rm -rf %{buildroot}%{_libdir}{,/dri-freeworld}/{d3d,EGL,gallium-pipe,libGLX,pkgconfig}
 rm -rf %{buildroot}%{_includedir}/{d3dadapter,EGL,GL,KHR}
 rm -fr %{buildroot}%{_sysconfdir}/OpenGL
-rm -fr %{buildroot}%{_libdir}/libGL.so*
+rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libGL.so*
 rm -fr %{buildroot}%{_libdir}/libgallium-*.so
-rm -fr %{buildroot}%{_libdir}/libglapi.so*
+rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libglapi.so*
 rm -fr %{buildroot}%{_libdir}/libOSMesa.so*
 rm -fr %{buildroot}%{_libdir}/pkgconfig/osmesa.pc
 rm -fr %{buildroot}%{_libdir}/libgbm.so*
@@ -314,18 +318,19 @@ rm -fr %{buildroot}%{_includedir}/xa_*.h
 rm -fr %{buildroot}%{_libdir}/libMesaOpenCL.so*
 rm -fr %{buildroot}%{_libdir}/dri/*_dri.so
 rm -fr %{buildroot}%{_libdir}/libvulkan*.so
-rm -fr %{buildroot}%{_libdir}/libVkLayer_MESA_device_select.so
+rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libVkLayer_MESA_device_select.so
 
 %if 0%{?with_va}
 %files -n %{srcname}-va-drivers-freeworld
-%{_libdir}/dri/nouveau_drv_video.so
+%{_libdir}/dri-freeworld/libgallium-%{version}.so
+%{_libdir}/dri-freeworld/nouveau_drv_video.so
 %if 0%{?with_r600}
-%{_libdir}/dri/r600_drv_video.so
+%{_libdir}/dri-freeworld/r600_drv_video.so
 %endif
 %if 0%{?with_radeonsi}
-%{_libdir}/dri/radeonsi_drv_video.so
+%{_libdir}/dri-freeworld/radeonsi_drv_video.so
 %endif
-%{_libdir}/dri/virtio_gpu_drv_video.so
+%{_libdir}/dri-freeworld/virtio_gpu_drv_video.so
 %{_metainfodir}/org.mesa3d.vaapi.freeworld.metainfo.xml
 %license docs/license.rst
 %endif
