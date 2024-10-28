@@ -71,7 +71,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.2.4
+%global ver 24.2.5
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -353,6 +353,9 @@ rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Mon Oct 28 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.2.5-1
+- Update to 24.2.5
+
 * Fri Oct 04 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.2.4-1
 - Update to 24.2.4
 - drop 0001-gallium-Don-t-pass-avx512er-and-avx512pf-features-on.patch
