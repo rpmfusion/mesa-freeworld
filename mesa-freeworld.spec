@@ -319,7 +319,7 @@ rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libVkLayer_MESA_device_select.so
 
 %if 0%{?with_va}
 %files -n %{srcname}-va-drivers-freeworld
-%{_libdir}/dri-freeworld/libgallium-%{version}.so
+%{_libdir}/dri-freeworld/libgallium-%{ver}.so
 %{_libdir}/dri-freeworld/nouveau_drv_video.so
 %if 0%{?with_r600}
 %{_libdir}/dri-freeworld/r600_drv_video.so
