@@ -70,7 +70,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.3.0-rc1
+%global ver 24.3.0-rc2
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -347,6 +347,9 @@ rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Thu Nov 14 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.0~rc2-1
+- Update to 24.3.0-rc2
+
 * Tue Nov 12 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.0~rc1-1
 - Update to 24.3.0-rc1
 - Drop unneeded omx support
