@@ -15,7 +15,6 @@ algorithms and decoding only VC1 algorithm.
 #%%if 0%%{?with_vulkan_hw}
 %global with_nvk %{with_vulkan_hw}
 #%%endif
-%global with_omx 0
 %global with_opencl 0
 %endif
 #%%global base_vulkan %%{?with_vulkan_hw:,amd}%%{!?with_vulkan_hw:%%{nil}}
@@ -71,7 +70,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.2.8
+%global ver 24.3.2
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -136,9 +135,6 @@ BuildRequires:  pkgconfig(vdpau) >= 1.1
 %endif
 %if 0%{?with_va}
 BuildRequires:  pkgconfig(libva) >= 0.38.0
-%endif
-%if 0%{?with_omx}
-BuildRequires:  pkgconfig(libomxil-bellagio)
 %endif
 BuildRequires:  pkgconfig(libelf)
 BuildRequires:  pkgconfig(libglvnd) >= 1.3.2
@@ -226,7 +222,6 @@ export RUSTFLAGS="%build_rustflags"
   -Ddri-drivers-path=%{_libdir}/dri-freeworld \
   -Dva-libs-path=%{_libdir}/dri-freeworld \
   -Dplatforms=x11,wayland \
-  -Ddri3=enabled \
   -Dosmesa=false \
 %if 0%{?with_hardware}
   -Dgallium-drivers=swrast,virgl,nouveau%{?with_r300:,r300}%{?with_crocus:,crocus}%{?with_i915:,i915}%{?with_iris:,iris}%{?with_vmware:,svga}%{?with_radeonsi:,radeonsi}%{?with_r600:,r600}%{?with_freedreno:,freedreno}%{?with_etnaviv:,etnaviv}%{?with_tegra:,tegra}%{?with_vc4:,vc4}%{?with_v3d:,v3d}%{?with_lima:,lima}%{?with_panfrost:,panfrost}%{?with_vulkan_hw:,zink} \
@@ -234,7 +229,6 @@ export RUSTFLAGS="%build_rustflags"
   -Dgallium-drivers=swrast,virgl \
 %endif
   -Dgallium-vdpau=%{?with_vdpau:enabled}%{!?with_vdpau:disabled} \
-  -Dgallium-omx=%{!?with_omx:bellagio}%{?with_omx:disabled} \
   -Dgallium-va=%{?with_va:enabled}%{!?with_va:disabled} \
   -Dgallium-xa=%{!?with_xa:enabled}%{?with_xa:disabled} \
   -Dgallium-nine=%{!?with_nine:true}%{?with_nine:false} \
@@ -325,7 +319,7 @@ rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libVkLayer_MESA_device_select.so
 
 %if 0%{?with_va}
 %files -n %{srcname}-va-drivers-freeworld
-%{_libdir}/dri-freeworld/libgallium-%{version}.so
+%{_libdir}/dri-freeworld/libgallium-%{ver}.so
 %{_libdir}/dri-freeworld/nouveau_drv_video.so
 %if 0%{?with_r600}
 %{_libdir}/dri-freeworld/r600_drv_video.so
@@ -353,11 +347,21 @@ rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
-* Thu Nov 28 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.2.8-1
-- Update to 24.2.8
+* Fri Dec 20 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.2-1
+- Update to 24.3.2
 
-* Thu Nov 14 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.2.7-1
-- Update to 24.2.7
+* Thu Dec 05 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.1-1
+- Update to 24.3.1
+
+* Fri Nov 22 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.0-1
+- Update to 24.3.0
+
+* Thu Nov 14 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.0~rc2-1
+- Update to 24.3.0-rc2
+
+* Tue Nov 12 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.0~rc1-1
+- Update to 24.3.0-rc1
+- Drop unneeded omx support
 
 * Thu Oct 31 2024 Thorsten Leemhuis <fedora@leemhuis.info> - 24.2.6-1
 - Update to 24.2.6
