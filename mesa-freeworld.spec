@@ -72,7 +72,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 24.3.3
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -317,8 +317,13 @@ rm -fr %{buildroot}%{_libdir}/dri/*_dri.so
 rm -fr %{buildroot}%{_libdir}/libvulkan*.so
 rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libVkLayer_MESA_device_select.so
 
+# ld.so.conf.d file
+install -m 0755 -d  %{buildroot}%{_sysconfdir}/ld.so.conf.d/
+echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}-%{_lib}.conf
+
 %if 0%{?with_va}
 %files -n %{srcname}-va-drivers-freeworld
+%config %{_sysconfdir}/ld.so.conf.d/%{name}-%{_lib}.conf
 %{_libdir}/dri-freeworld/libgallium-%{ver}.so
 %{_libdir}/dri-freeworld/nouveau_drv_video.so
 %if 0%{?with_r600}
@@ -347,6 +352,9 @@ rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Fri Jan 10 2025 Leigh Scott <leigh123linux@gmail.com> - 24.3.3-2
+- Fix tearing due to fedora libgallium
+
 * Fri Jan 10 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.3-1
 - Update to 24.3.3
 
