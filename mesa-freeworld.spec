@@ -72,7 +72,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 24.3.3
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        2%{?dist}
+Release:        3%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -322,6 +322,8 @@ install -m 0755 -d  %{buildroot}%{_sysconfdir}/ld.so.conf.d/
 echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}-%{_lib}.conf
 
 %if 0%{?with_va}
+%post -n %{srcname}-va-drivers-freeworld -p /usr/bin/ldconfig
+%postun -n %{srcname}-va-drivers-freeworld -p /usr/bin/ldconfig
 %files -n %{srcname}-va-drivers-freeworld
 %config %{_sysconfdir}/ld.so.conf.d/%{name}-%{_lib}.conf
 %{_libdir}/dri-freeworld/libgallium-%{ver}.so
@@ -352,6 +354,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Sat Jan 11 2025 Leigh Scott <leigh123linux@gmail.com> - 24.3.3-3
+- Add ldconfig scriptlets
+
 * Fri Jan 10 2025 Leigh Scott <leigh123linux@gmail.com> - 24.3.3-2
 - Fix tearing due to fedora libgallium
 
