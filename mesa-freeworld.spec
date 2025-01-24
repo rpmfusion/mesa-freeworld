@@ -72,7 +72,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 24.3.4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        5%{?dist}
+Release:        2%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -241,8 +241,8 @@ export RUSTFLAGS="%build_rustflags"
   -Dvulkan-drivers=%{?vulkan_drivers} \
   -Dvulkan-layers=device-select \
   -Dshared-glapi=enabled \
-  -Dgles1=disabled \
-  -Dgles2=disabled \
+  -Dgles1=enabled \
+  -Dgles2=enabled \
   -Dopengl=true \
   -Dgbm=disabled \
   -Dglx=dri \
@@ -316,9 +316,19 @@ rm -fr %{buildroot}%{_libdir}/libMesaOpenCL.so*
 rm -fr %{buildroot}%{_libdir}/dri/*_dri.so
 rm -fr %{buildroot}%{_libdir}/libvulkan*.so
 rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libVkLayer_MESA_device_select.so
+rm -fr %{buildroot}%{_includedir}/GLES*
+rm -fr %{buildroot}%{_libdir}/dri-freeworld/libGLES*
+rm -fr %{buildroot}%{_prefix}/lib%{_libdir}/dri-freeworld/libGLES*
+
+# ld.so.conf.d file
+install -m 0755 -d  %{buildroot}%{_sysconfdir}/ld.so.conf.d/
+echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}-%{_lib}.conf
 
 %if 0%{?with_va}
+%post -n %{srcname}-va-drivers-freeworld -p /sbin/ldconfig
+%postun -n %{srcname}-va-drivers-freeworld -p /sbin/ldconfig
 %files -n %{srcname}-va-drivers-freeworld
+%config %{_sysconfdir}/ld.so.conf.d/%{name}-%{_lib}.conf
 %{_libdir}/dri-freeworld/libgallium-%{ver}.so
 %{_libdir}/dri-freeworld/nouveau_drv_video.so
 %if 0%{?with_r600}
@@ -347,6 +357,10 @@ rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Fri Jan 24 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.4-2
+- Reapply ldconfig changes from Leigh
+- Enable GLES stuff and exclude some of the files now getting build
+
 * Fri Jan 24 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.4-1
 - Update to 24.3.4
 
