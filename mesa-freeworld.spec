@@ -70,7 +70,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.3.3
+%global ver 24.3.4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        5%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -347,6 +347,9 @@ rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libVkLayer_MESA_device_select.so
 %endif
 
 %changelog
+* Fri Jan 24 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.4-1
+- Update to 24.3.4
+
 * Fri Jan 17 2025 Leigh Scott <leigh123linux@gmail.com> - 24.3.3-5
 - Remove ldconfig as it breaks some apps
 
