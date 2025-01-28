@@ -72,7 +72,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 24.3.4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        6%{?dist}
+Release:        7%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -139,9 +139,6 @@ BuildRequires:  pkgconfig(libva) >= 0.38.0
 BuildRequires:  pkgconfig(libelf)
 BuildRequires:  pkgconfig(libglvnd) >= 1.3.2
 BuildRequires:  llvm-devel >= 7.0.0
-%if 0%{?fedora} >= 41
-BuildRequires:  llvm-devel >= 19.0.0
-%endif
 %if 0%{?with_teflon}
 BuildRequires:  flatbuffers-devel
 BuildRequires:  flatbuffers-compiler
@@ -188,7 +185,6 @@ BuildRequires:  pkgconfig(vulkan)
 %package        -n %{srcname}-va-drivers-freeworld
 Summary:        Mesa-based VA-API drivers
 Requires:       %{srcname}-filesystem%{?_isa} = %{?epoch:%{epoch}:}%{version}
-Conflicts:      %{srcname}-va-drivers%{?_isa}
 
 %description    -n %{srcname}-va-drivers-freeworld
 %{_description}
@@ -357,7 +353,12 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
-* Fri Jan 24 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.4-5
+* Mon Jan 27 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.4-7
+- Drop conflicts with mesa-va-drivers, as its files do not conclict
+  anymore with the ones in mesa-va-drivers-freeworld
+- Drop now unneeded BR on a specific LLVM version
+
+* Fri Jan 24 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.4-6
 - Rebuild due to mishap with the release number
 
 * Fri Jan 24 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 24.3.4-2
