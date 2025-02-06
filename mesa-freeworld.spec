@@ -70,9 +70,9 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 24.3.4
+%global ver 25.0.0-rc2
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        8%{?dist}
+Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -83,10 +83,6 @@ Source0:        https://archive.mesa3d.org/%{srcname}-%{ver}.tar.xz
 Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
-
-# https://gitlab.freedesktop.org/mesa/mesa/-/issues/12310
-# https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/33248
-Patch12:        https://gitlab.freedesktop.org/mesa/mesa/-/commit/3b78dcec058e.patch#/mesa-24.3.4-radeonsi-disallow-compute-queues-on-Raven_Raven2-due-to-hangs.patch
 
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
@@ -357,6 +353,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Thu Feb 06 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.0.0~rc2-1
+- Update to 25.0.0~rc2
+- drop upstreamed patch
+
 * Tue Jan 28 2025 Björn Esser <besser82@fedoraproject.org> - 24.3.4-8
 - Add patch for radeonsi to disallow compute queues on Raven/Raven2
   due to hangs
