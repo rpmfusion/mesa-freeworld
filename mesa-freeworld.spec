@@ -70,9 +70,9 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.0.0-rc2
+%global ver 25.0.0-rc3
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        2%{?dist}
+Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -414,6 +414,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Thu Feb 13 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.0.0~rc3-1
+- Update to 25.0.0~rc3
+
 * Tue Feb 11 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.0.0~rc2-2
 - create mesa-vulkan-drivers-freeworld, conflicting with mesa-vulkan-drivers
 
