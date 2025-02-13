@@ -5,26 +5,26 @@ algorithms and decoding only VC1 algorithm.
 %global with_hardware 1
 %global with_radeonsi 1
 %global with_vmware 1
-%global with_vulkan_hw 0
+%global with_vulkan_hw 1
 %global with_vdpau 1
 %global with_va 1
 %if !0%{?rhel}
 %global with_r300 1
 %global with_r600 1
 %global with_nine 0
-#%%if 0%%{?with_vulkan_hw}
+%if 0%{?with_vulkan_hw}
 %global with_nvk %{with_vulkan_hw}
-#%%endif
+%endif
 %global with_opencl 0
 %endif
-#%%global base_vulkan %%{?with_vulkan_hw:,amd}%%{!?with_vulkan_hw:%%{nil}}
+%global base_vulkan %{?with_vulkan_hw:,amd}%{!?with_vulkan_hw:%{nil}}
 %endif
 
-#%%ifnarch %%{ix86}
+%ifnarch %{ix86}
 %if !0%{?rhel}
 %global with_teflon 0
 %endif
-#%%endif
+%endif
 
 %ifarch %{ix86} x86_64
 %global with_crocus 0
@@ -32,13 +32,13 @@ algorithms and decoding only VC1 algorithm.
 %global with_iris   0
 %global with_xa     0
 %global with_intel_clc 0
-#%%global intel_platform_vulkan %%{?with_vulkan_hw:,intel,intel_hasvk}%%{!?with_vulkan_hw:%%{nil}}
+%global intel_platform_vulkan %{?with_vulkan_hw:,intel,intel_hasvk}%{!?with_vulkan_hw:%{nil}}
 %endif
-#%%ifarch x86_64
-#%%if !0%%{?with_vulkan_hw}
-%global with_intel_vk_rt 0
-#%%endif
-#%%endif
+%ifarch x86_64
+%if !0%{?with_vulkan_hw}
+%global with_intel_vk_rt 1
+%endif
+%endif
 
 %ifarch aarch64 x86_64 %{ix86}
 %global with_kmsro     0
@@ -52,7 +52,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_panfrost  0
 %global with_v3d       0
 %global with_xa        0
-#%%global extra_platform_vulkan %%{?with_vulkan_hw:,broadcom,freedreno,panfrost,imagination-experimental}%%{!?with_vulkan_hw:%%{nil}}
+%global extra_platform_vulkan %{?with_vulkan_hw:,broadcom,freedreno,panfrost,imagination-experimental}%{!?with_vulkan_hw:%{nil}}
 %endif
 
 %if !0%{?rhel}
@@ -66,13 +66,13 @@ algorithms and decoding only VC1 algorithm.
 %bcond_with valgrind
 %endif
 
-#%%global vulkan_drivers swrast%%{?base_vulkan}%%{?intel_platform_vulkan}%%{?extra_platform_vulkan}%%{?with_nvk:,nouveau}
+%global vulkan_drivers swrast,virtio%{?base_vulkan}%{?intel_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 25.0.0-rc2
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -145,14 +145,14 @@ BuildRequires:  flatbuffers-compiler
 BuildRequires:  xtensor-devel
 %endif
 %if 0%{?with_opencl} || 0%{?with_nvk} || 0%{?with_intel_clc}
-BuildRequires:  rust-packaging
-%endif
-%ifarch %{ix86} x86_64
 BuildRequires:  clang-devel
-BuildRequires:  bindgen
 BuildRequires:  pkgconfig(libclc)
 BuildRequires:  pkgconfig(SPIRV-Tools)
 BuildRequires:  pkgconfig(LLVMSPIRVLib)
+%endif
+%if 0%{?with_opencl} || 0%{?with_nvk}
+BuildRequires:  bindgen
+BuildRequires:  rust-packaging
 %endif
 %if 0%{?with_nvk}
 BuildRequires:  cbindgen
@@ -199,6 +199,22 @@ Conflicts:      %{srcname}-vdpau-drivers%{?_isa}
 %description 	-n %{srcname}-vdpau-drivers-freeworld
 %{_description}
 %endif
+
+%package -n %{srcname}-vulkan-drivers-freeworld
+Summary:        Mesa Vulkan drivers
+Requires:       vulkan%{_isa}
+Requires:       %{srcname}-vulkan-drivers%{?_isa} = %{?epoch:%{epoch}:}%{version}
+# the following conflict is needed until we can find a way to install freeworld
+# drivers in parallel to Fedora's; for ideas how to realize this see:
+# * https://github.com/KhronosGroup/Vulkan-Loader/issues/1647 and its backstory: 
+#   https://lists.freedesktop.org/archives/mesa-dev/2025-February/226460.html
+# * https://gitlab.freedesktop.org/mesa/mesa/-/issues/12606
+Conflicts:      %{srcname}-vulkan-drivers%{?_isa}
+
+%description -n %{srcname}-vulkan-drivers-freeworld
+The drivers with support for the Vulkan with support for acclerating decoding
+and encoding of various video codecs.
+
 %prep
 %autosetup -n %{srcname}-%{ver} -p1
 cp %{SOURCE1} docs/
@@ -206,6 +222,19 @@ cp %{SOURCE1} docs/
 %build
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%build_rustflags"
+
+%if 0%{?with_nvk}
+export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
+# So... Meson can't actually find them without tweaks
+%define inst_crate_nameversion() %(basename %{cargo_registry}/%{1}-*)
+%define rewrite_wrap_file() sed -e "/source.*/d" -e "s/%{1}-.*/%{inst_crate_nameversion %{1}}/" -i subprojects/%{1}.wrap
+
+%rewrite_wrap_file proc-macro2
+%rewrite_wrap_file quote
+%rewrite_wrap_file syn
+%rewrite_wrap_file unicode-ident
+%rewrite_wrap_file paste
+%endif
 
 # We've gotten a report that enabling LTO for mesa breaks some games. See
 # https://bugzilla.redhat.com/show_bug.cgi?id=1862771 for details.
@@ -295,7 +324,7 @@ done
 popd
 
 # strip unneeded files from va-api and vdpau
-rm -rf %{buildroot}%{_datadir}/{drirc.d,glvnd,vulkan}
+rm -rf %{buildroot}%{_datadir}/{drirc.d/00-mesa-defaults.conf,glvnd}
 rm -rf %{buildroot}%{_libdir}{,/dri-freeworld}/{d3d,EGL,gallium-pipe,libGLX,pkgconfig}
 rm -rf %{buildroot}%{_includedir}/{d3dadapter,EGL,GL,KHR}
 rm -fr %{buildroot}%{_sysconfdir}/OpenGL
@@ -310,8 +339,6 @@ rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libxatracker.so*
 rm -fr %{buildroot}%{_includedir}/xa_*.h
 rm -fr %{buildroot}%{_libdir}/libMesaOpenCL.so*
 rm -fr %{buildroot}%{_libdir}/dri/*_dri.so
-rm -fr %{buildroot}%{_libdir}/libvulkan*.so
-rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libVkLayer_MESA_device_select.so
 rm -fr %{buildroot}%{_includedir}/GLES*
 rm -fr %{buildroot}%{_libdir}/dri-freeworld/libGLES*
 rm -fr %{buildroot}%{_prefix}/lib%{_libdir}/dri-freeworld/libGLES*
@@ -352,7 +379,44 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %license docs/license.rst
 %endif
 
+%files -n %{srcname}-vulkan-drivers-freeworld
+%{_libdir}/dri-freeworld/libvulkan_lvp.so
+%{_datadir}/vulkan/icd.d/lvp_icd.*.json
+%{_libdir}/dri-freeworld/libvulkan_virtio.so
+%{_datadir}/vulkan/icd.d/virtio_icd.*.json
+%{_libdir}/dri-freeworld/libVkLayer_MESA_device_select.so
+%{_datadir}/vulkan/implicit_layer.d/VkLayer_MESA_device_select.json
+%if 0%{?with_vulkan_hw}
+%{_libdir}/dri-freeworld/libvulkan_radeon.so
+%{_datadir}/drirc.d/00-radv-defaults.conf
+%{_datadir}/vulkan/icd.d/radeon_icd.*.json
+%if 0%{?with_nvk}
+%{_libdir}/dri-freeworld/libvulkan_nouveau.so
+%{_datadir}/vulkan/icd.d/nouveau_icd.*.json
+%endif
+%ifarch %{ix86} x86_64
+%{_libdir}/dri-freeworld/libvulkan_intel.so
+%{_datadir}/vulkan/icd.d/intel_icd.*.json
+%{_libdir}/dri-freeworld/libvulkan_intel_hasvk.so
+%{_datadir}/vulkan/icd.d/intel_hasvk_icd.*.json
+%endif
+%ifarch aarch64 x86_64 %{ix86}
+%{_libdir}/dri-freeworld/libvulkan_broadcom.so
+%{_datadir}/vulkan/icd.d/broadcom_icd.*.json
+%{_libdir}/dri-freeworld/libvulkan_freedreno.so
+%{_datadir}/vulkan/icd.d/freedreno_icd.*.json
+%{_libdir}/dri-freeworld/libvulkan_panfrost.so
+%{_datadir}/vulkan/icd.d/panfrost_icd.*.json
+%{_libdir}/dri-freeworld/libpowervr_rogue.so
+%{_libdir}/dri-freeworld/libvulkan_powervr_mesa.so
+%{_datadir}/vulkan/icd.d/powervr_mesa_icd.*.json
+%endif
+%endif
+
 %changelog
+* Tue Feb 11 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.0.0~rc2-2
+- create mesa-vulkan-drivers-freeworld, conflicting with mesa-vulkan-drivers
+
 * Thu Feb 06 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.0.0~rc2-1
 - Update to 25.0.0~rc2
 - drop upstreamed patch
