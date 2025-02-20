@@ -72,7 +72,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 25.0.0
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        2%{?dist}
+Release:        3%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -205,7 +205,7 @@ Conflicts:      %{srcname}-vdpau-drivers%{?_isa}
 %package -n %{srcname}-vulkan-drivers-freeworld
 Summary:        Mesa Vulkan drivers
 Requires:       vulkan%{_isa}
-Requires:       %{name}-filesystem%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
+Requires:       %{srcname}-filesystem%{?_isa} = %{?epoch:%{epoch}:}%{version}
 Provides:       %{srcname}-vulkan-drivers%{?_isa} = %{?epoch:%{epoch}:}%{version}
 Obsoletes:      mesa-vulkan-devel < %{?epoch:%{epoch}:}%{version}-%{release}
 # the following conflict is needed until we can find a way to install freeworld
@@ -418,6 +418,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Thu Feb 20 2025 Björn Esser <besser82@fedoraproject.org> - 25.0.0-3
+- Fix mesa-filesystem requires in mesa-vulkan-drivers-freeworld
+
 * Thu Feb 20 2025 Björn Esser <besser82@fedoraproject.org> - 25.0.0-2
 - Fix general installability of mesa-vulkan-drivers-freeworld
 
