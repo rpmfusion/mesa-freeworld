@@ -48,10 +48,14 @@ algorithms and decoding only VC1 algorithm.
 %global with_etnaviv   0
 %global with_tegra     0
 %endif
+%global with_asahi     1
 %global with_freedreno 0
 %global with_panfrost  0
 %global with_v3d       0
 %global with_xa        0
+%if 0%{?with_asahi}
+%global asahi_platform_vulkan %{?with_vulkan_hw:,asahi}%{!?with_vulkan_hw:%{nil}}
+%endif
 %global extra_platform_vulkan %{?with_vulkan_hw:,broadcom,freedreno,panfrost,imagination-experimental}%{!?with_vulkan_hw:%{nil}}
 %endif
 
@@ -66,11 +70,11 @@ algorithms and decoding only VC1 algorithm.
 %bcond_with valgrind
 %endif
 
-%global vulkan_drivers swrast,virtio%{?base_vulkan}%{?intel_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}
+%global vulkan_drivers swrast,virtio%{?base_vulkan}%{?intel_platform_vulkan}%{?asahi_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.0.4
+%global ver 25.1.0-rc2
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -84,19 +88,7 @@ Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
-# Backport of https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/33805
-# to fix clover with libclc from LLVM 20.
-# to fix clover with libclc from LLVM 20.
-Patch20:        e4eb5e80c316c0af3fff310ca89e1175d81556c1.patch
-
-# Backport of https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/32038
-# and fixes: vulkan/wsi: implement the Wayland color management protocol
-Patch21:        0001-increase-required-wayland-protocols-version-to-1.41.patch
-Patch22:        0002-vulkan-wsi-implement-the-Wayland-color-management-pr.patch
-Patch23:        0003-vulkan-wsi-implement-support-for-VK_EXT_hdr_metadata.patch
-Patch24:        0004-vulkan-wsi-handle-the-compositor-not-supporting-exte.patch
-Patch25:        0001-meson-update-wayland-protocols-source_hash.patch
-Patch26:        0001-docs-features-add-VK_EXT_hdr_metadata.patch
+Patch10:        gnome-shell-glthread-disable.patch
 
 # This patch makes Fedora CI fail and causes issues in QEMU. Revert it until
 # we find a fix.
@@ -164,7 +156,7 @@ BuildRequires:  flatbuffers-devel
 BuildRequires:  flatbuffers-compiler
 BuildRequires:  xtensor-devel
 %endif
-%if 0%{?with_opencl} || 0%{?with_nvk} || 0%{?with_intel_clc}
+%if 0%{?with_opencl} || 0%{?with_nvk} || 0%{?with_intel_clc} || 0%{?with_asahi}
 BuildRequires:  clang-devel
 BuildRequires:  pkgconfig(libclc)
 BuildRequires:  pkgconfig(SPIRV-Tools)
@@ -272,7 +264,7 @@ export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
   -Dplatforms=x11,wayland \
   -Dosmesa=false \
 %if 0%{?with_hardware}
-  -Dgallium-drivers=llvmpipe,virgl,nouveau%{?with_r300:,r300}%{?with_crocus:,crocus}%{?with_i915:,i915}%{?with_iris:,iris}%{?with_vmware:,svga}%{?with_radeonsi:,radeonsi}%{?with_r600:,r600}%{?with_freedreno:,freedreno}%{?with_etnaviv:,etnaviv}%{?with_tegra:,tegra}%{?with_vc4:,vc4}%{?with_v3d:,v3d}%{?with_lima:,lima}%{?with_panfrost:,panfrost}%{?with_vulkan_hw:,zink} \
+  -Dgallium-drivers=llvmpipe,virgl,nouveau%{?with_r300:,r300}%{?with_crocus:,crocus}%{?with_i915:,i915}%{?with_iris:,iris}%{?with_vmware:,svga}%{?with_radeonsi:,radeonsi}%{?with_r600:,r600}%{?with_asahi:,asahi}%{?with_freedreno:,freedreno}%{?with_etnaviv:,etnaviv}%{?with_tegra:,tegra}%{?with_vc4:,vc4}%{?with_v3d:,v3d}%{?with_lima:,lima}%{?with_panfrost:,panfrost}%{?with_vulkan_hw:,zink} \
 %else
   -Dgallium-drivers=llvmpipe,virgl \
 %endif
@@ -341,7 +333,7 @@ ln -s %{_libdir}/libGLX_mesa.so.0 %{buildroot}%{_libdir}/libGLX_system.so.0
 
 # this keeps breaking, check it early.  note that the exit from eu-ftr is odd.
 pushd %{buildroot}%{_libdir}
-for i in libOSMesa*.so libGL.so ; do
+for i in libGL.so ; do
     eu-findtextrel $i && exit 1
 done
 popd
@@ -357,7 +349,7 @@ rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libglapi.so*
 rm -fr %{buildroot}%{_libdir}/libOSMesa.so*
 rm -fr %{buildroot}%{_libdir}/pkgconfig/osmesa.pc
 rm -fr %{buildroot}%{_libdir}/libgbm.so*
-rm -fr %{buildroot}%{_includedir}/gbm.h
+rm -fr %{buildroot}%{_includedir}/gbm.h %{buildroot}%{_includedir}/gbm_backend_abi.h
 rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libxatracker.so*
 rm -fr %{buildroot}%{_includedir}/xa_*.h
 rm -fr %{buildroot}%{_libdir}/libMesaOpenCL.so*
@@ -424,6 +416,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %{_datadir}/vulkan/icd.d/intel_hasvk_icd.*.json
 %endif
 %ifarch aarch64 x86_64 %{ix86}
+%if 0%{?with_asahi}
+%{_libdir}/dri-freeworld/libvulkan_asahi.so
+%{_datadir}/vulkan/icd.d/asahi_icd.*.json
+%endif
 %{_libdir}/dri-freeworld/libvulkan_broadcom.so
 %{_datadir}/vulkan/icd.d/broadcom_icd.*.json
 %{_libdir}/dri-freeworld/libvulkan_freedreno.so
@@ -437,6 +433,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Fri Apr 25 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.0~rc2-1
+- Update to 25.0.0~rc2
+- Sync new bits with Fedora, which includes enabling of the asahi driver
+
 * Tue Apr 22 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.0.4-1
 - Update to 25.0.4
 - Sync a few bits with Fedora
