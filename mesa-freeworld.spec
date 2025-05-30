@@ -74,7 +74,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.1.0
+%global ver 25.1.1
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -156,7 +156,7 @@ BuildRequires:  flatbuffers-devel
 BuildRequires:  flatbuffers-compiler
 BuildRequires:  xtensor-devel
 %endif
-%if 0%{?with_opencl} || 0%{?with_nvk} || 0%{?with_intel_clc} || 0%{?with_asahi}
+%if 0%{?with_opencl} || 0%{?with_nvk} || 0%{?with_intel_clc} || 0%{?with_asahi} || 0%{?with_panfrost}
 BuildRequires:  clang-devel
 BuildRequires:  pkgconfig(libclc)
 BuildRequires:  pkgconfig(SPIRV-Tools)
@@ -197,6 +197,8 @@ BuildRequires:  pkgconfig(vulkan)
 %package        -n %{srcname}-va-drivers-freeworld
 Summary:        Mesa-based VA-API drivers
 Requires:       %{srcname}-filesystem%{?_isa} = %{?epoch:%{epoch}:}%{version}
+Provides:       %{srcname}-va-drivers = %{?epoch:%{epoch}:}%{version}-%{release}
+Provides:       %{srcname}-va-drivers%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
 
 %description    -n %{srcname}-va-drivers-freeworld
 %{_description}
@@ -273,9 +275,9 @@ export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
   -Dgallium-xa=%{!?with_xa:enabled}%{?with_xa:disabled} \
   -Dgallium-nine=%{!?with_nine:true}%{?with_nine:false} \
   -Dteflon=%{!?with_teflon:true}%{?with_teflon:false} \
-  -Dgallium-opencl=%{!?with_opencl:icd}%{?with_opencl:disabled} \
 %if 0%{?with_opencl}
   -Dgallium-rusticl=true \
+  -Dgallium-opencl=disabled \
 %endif
   -Dvideo-codecs=h264dec,h264enc,h265dec,h265enc,vc1dec,av1dec,av1enc,vp9dec \
   -Dvulkan-drivers=%{?vulkan_drivers} \
@@ -439,6 +441,11 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Fri May 30 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.1-1
+- Update to 25.1.1
+- add provides mesa-va-drivers to mesa-va-drivers-freeworld (#7231)
+- sync a few minor bits with Fedora
+
 * Thu May 8 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.0-1
 - Update to 25.1.0
 - Sync new bits with Fedora
