@@ -72,7 +72,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 25.0.7
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -103,6 +103,9 @@ Patch26:        0001-docs-features-add-VK_EXT_hdr_metadata.patch
 # https://bugzilla.redhat.com/show_bug.cgi?id=2360851
 # https://gitlab.freedesktop.org/mesa/mesa/-/issues/13009
 Patch30:        0001-Revert-kopper-Explicitly-choose-zink.patch
+
+# Upstream revert for gtk corruption on haswell
+Patch50:	0001-Revert-hasvk-elk-stop-turning-load_push_constants-in.patch
 
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
@@ -439,6 +442,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Mon Jun 09 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.0.7-2
+- add 0001-Revert-hasvk-elk-stop-turning-load_push_constants-in.patch
+
 * Fri May 30 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.0.7-1
 - Update to 25.0.7
 - add provides mesa-va-drivers to mesa-va-drivers-freeworld (#7231)
