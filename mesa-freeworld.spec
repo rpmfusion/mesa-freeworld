@@ -74,7 +74,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.1.1
+%global ver 25.1.3
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -90,11 +90,8 @@ Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
 Patch10:        gnome-shell-glthread-disable.patch
 
-# This patch makes Fedora CI fail and causes issues in QEMU. Revert it until
-# we find a fix.
-# https://bugzilla.redhat.com/show_bug.cgi?id=2360851
-# https://gitlab.freedesktop.org/mesa/mesa/-/issues/13009
-Patch30:        0001-Revert-kopper-Explicitly-choose-zink.patch
+# upstream revert to fix gtk4
+Patch40: 0001-Revert-hasvk-elk-stop-turning-load_push_constants-in.patch
 
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
@@ -441,6 +438,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Mon Jun 9 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.3-1
+- Update to 25.1.3
+- sync a few minor bits with Fedora
+
 * Fri May 30 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.1-1
 - Update to 25.1.1
 - add provides mesa-va-drivers to mesa-va-drivers-freeworld (#7231)
