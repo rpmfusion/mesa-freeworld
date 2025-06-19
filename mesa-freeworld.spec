@@ -47,11 +47,16 @@ algorithms and decoding only VC1 algorithm.
 %global with_vc4       0
 %global with_etnaviv   0
 %global with_tegra     0
+%global with_asahi     1
+%global with_d3d12     0
 %endif
 %global with_freedreno 0
 %global with_panfrost  0
 %global with_v3d       0
 %global with_xa        0
+%if 0%{?with_asahi}
+%global asahi_platform_vulkan %{?with_vulkan_hw:,asahi}%{!?with_vulkan_hw:%{nil}}
+%endif
 %global extra_platform_vulkan %{?with_vulkan_hw:,broadcom,freedreno,panfrost,imagination-experimental}%{!?with_vulkan_hw:%{nil}}
 %endif
 
@@ -66,13 +71,13 @@ algorithms and decoding only VC1 algorithm.
 %bcond_with valgrind
 %endif
 
-%global vulkan_drivers swrast,virtio%{?base_vulkan}%{?intel_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}
+%global vulkan_drivers swrast,virtio%{?base_vulkan}%{?intel_platform_vulkan}%{?asahi_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.0.7
+%global ver 25.1.4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        2%{?dist}
+Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -84,28 +89,7 @@ Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
-# Backport of https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/33805
-# to fix clover with libclc from LLVM 20.
-# to fix clover with libclc from LLVM 20.
-Patch20:        e4eb5e80c316c0af3fff310ca89e1175d81556c1.patch
-
-# Backport of https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/32038
-# and fixes: vulkan/wsi: implement the Wayland color management protocol
-Patch21:        0001-increase-required-wayland-protocols-version-to-1.41.patch
-Patch22:        0002-vulkan-wsi-implement-the-Wayland-color-management-pr.patch
-Patch23:        0003-vulkan-wsi-implement-support-for-VK_EXT_hdr_metadata.patch
-Patch24:        0004-vulkan-wsi-handle-the-compositor-not-supporting-exte.patch
-Patch25:        0001-meson-update-wayland-protocols-source_hash.patch
-Patch26:        0001-docs-features-add-VK_EXT_hdr_metadata.patch
-
-# This patch makes Fedora CI fail and causes issues in QEMU. Revert it until
-# we find a fix.
-# https://bugzilla.redhat.com/show_bug.cgi?id=2360851
-# https://gitlab.freedesktop.org/mesa/mesa/-/issues/13009
-Patch30:        0001-Revert-kopper-Explicitly-choose-zink.patch
-
-# Upstream revert for gtk corruption on haswell
-Patch50:	0001-Revert-hasvk-elk-stop-turning-load_push_constants-in.patch
+Patch10:        gnome-shell-glthread-disable.patch
 
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
@@ -167,7 +151,7 @@ BuildRequires:  flatbuffers-devel
 BuildRequires:  flatbuffers-compiler
 BuildRequires:  xtensor-devel
 %endif
-%if 0%{?with_opencl} || 0%{?with_nvk} || 0%{?with_intel_clc}
+%if 0%{?with_opencl} || 0%{?with_nvk} || 0%{?with_intel_clc} || 0%{?with_asahi} || 0%{?with_panfrost}
 BuildRequires:  clang-devel
 BuildRequires:  pkgconfig(libclc)
 BuildRequires:  pkgconfig(SPIRV-Tools)
@@ -199,6 +183,9 @@ BuildRequires:  vulkan-headers
 BuildRequires:  glslang
 %if 0%{?with_vulkan_hw}
 BuildRequires:  pkgconfig(vulkan)
+%endif
+%if 0%{?with_d3d12}
+BuildRequires:  pkgconfig(DirectX-Headers) >= 1.614.1
 %endif
 
 %description
@@ -240,8 +227,8 @@ Obsoletes:      mesa-vulkan-devel < %{?epoch:%{epoch}:}%{version}-%{release}
 Conflicts:      %{srcname}-vulkan-drivers%{?_isa}
 
 %description -n %{srcname}-vulkan-drivers-freeworld
-The drivers with support for the Vulkan with support for acclerating decoding
-and encoding of various video codecs.
+The drivers with support for the Vulkan API with support for accelerating
+decoding and encoding of various video codecs, including H.264 and H.265.
 
 %prep
 %autosetup -n %{srcname}-%{ver} -p1
@@ -277,7 +264,7 @@ export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
   -Dplatforms=x11,wayland \
   -Dosmesa=false \
 %if 0%{?with_hardware}
-  -Dgallium-drivers=llvmpipe,virgl,nouveau%{?with_r300:,r300}%{?with_crocus:,crocus}%{?with_i915:,i915}%{?with_iris:,iris}%{?with_vmware:,svga}%{?with_radeonsi:,radeonsi}%{?with_r600:,r600}%{?with_freedreno:,freedreno}%{?with_etnaviv:,etnaviv}%{?with_tegra:,tegra}%{?with_vc4:,vc4}%{?with_v3d:,v3d}%{?with_lima:,lima}%{?with_panfrost:,panfrost}%{?with_vulkan_hw:,zink} \
+  -Dgallium-drivers=llvmpipe,virgl,nouveau%{?with_r300:,r300}%{?with_crocus:,crocus}%{?with_i915:,i915}%{?with_iris:,iris}%{?with_vmware:,svga}%{?with_radeonsi:,radeonsi}%{?with_r600:,r600}%{?with_asahi:,asahi}%{?with_freedreno:,freedreno}%{?with_etnaviv:,etnaviv}%{?with_tegra:,tegra}%{?with_vc4:,vc4}%{?with_v3d:,v3d}%{?with_lima:,lima}%{?with_panfrost:,panfrost}%{?with_vulkan_hw:,zink} \
 %else
   -Dgallium-drivers=llvmpipe,virgl \
 %endif
@@ -286,9 +273,9 @@ export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
   -Dgallium-xa=%{!?with_xa:enabled}%{?with_xa:disabled} \
   -Dgallium-nine=%{!?with_nine:true}%{?with_nine:false} \
   -Dteflon=%{!?with_teflon:true}%{?with_teflon:false} \
-  -Dgallium-opencl=%{!?with_opencl:icd}%{?with_opencl:disabled} \
 %if 0%{?with_opencl}
   -Dgallium-rusticl=true \
+  -Dgallium-opencl=disabled \
 %endif
   -Dvideo-codecs=h264dec,h264enc,h265dec,h265enc,vc1dec,av1dec,av1enc,vp9dec \
   -Dvulkan-drivers=%{?vulkan_drivers} \
@@ -340,13 +327,19 @@ rm -vf %{buildroot}%{_libdir}/libEGL_mesa.so
 # XXX can we just not build this
 rm -vf %{buildroot}%{_libdir}/libGLES*
 
+%if ! 0%{?with_asahi}
+# This symlink is unconditionally created when any kmsro driver is enabled
+# We don't want this one so delete it
+rm -vf %{buildroot}%{_libdir}/dri/apple_dri.so
+%endif
+
 # glvnd needs a default provider for indirect rendering where it cannot
 # determine the vendor
 ln -s %{_libdir}/libGLX_mesa.so.0 %{buildroot}%{_libdir}/libGLX_system.so.0
 
 # this keeps breaking, check it early.  note that the exit from eu-ftr is odd.
 pushd %{buildroot}%{_libdir}
-for i in libOSMesa*.so libGL.so ; do
+for i in libGL.so ; do
     eu-findtextrel $i && exit 1
 done
 popd
@@ -362,7 +355,7 @@ rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libglapi.so*
 rm -fr %{buildroot}%{_libdir}/libOSMesa.so*
 rm -fr %{buildroot}%{_libdir}/pkgconfig/osmesa.pc
 rm -fr %{buildroot}%{_libdir}/libgbm.so*
-rm -fr %{buildroot}%{_includedir}/gbm.h
+rm -fr %{buildroot}%{_includedir}/gbm.h %{buildroot}%{_includedir}/gbm_backend_abi.h
 rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libxatracker.so*
 rm -fr %{buildroot}%{_includedir}/xa_*.h
 rm -fr %{buildroot}%{_libdir}/libMesaOpenCL.so*
@@ -429,6 +422,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %{_datadir}/vulkan/icd.d/intel_hasvk_icd.*.json
 %endif
 %ifarch aarch64 x86_64 %{ix86}
+%if 0%{?with_asahi}
+%{_libdir}/dri-freeworld/libvulkan_asahi.so
+%{_datadir}/vulkan/icd.d/asahi_icd.*.json
+%endif
 %{_libdir}/dri-freeworld/libvulkan_broadcom.so
 %{_datadir}/vulkan/icd.d/broadcom_icd.*.json
 %{_libdir}/dri-freeworld/libvulkan_freedreno.so
@@ -442,15 +439,27 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
-* Mon Jun 09 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.0.7-2
-- add 0001-Revert-hasvk-elk-stop-turning-load_push_constants-in.patch
+* Thu Jun 19 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.4-1
+- Update to 25.1.4
+- sync a few minor bits with Fedora
+- improve description of mesa-vulkan-drivers-freeworld
 
-* Fri May 30 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.0.7-1
-- Update to 25.0.7
+* Mon Jun 9 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.3-1
+- Update to 25.1.3
+- sync a few minor bits with Fedora
+
+* Fri May 30 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.1-1
+- Update to 25.1.1
 - add provides mesa-va-drivers to mesa-va-drivers-freeworld (#7231)
+- sync a few minor bits with Fedora
 
-* Wed May 21 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.0.6-1
-- Update to 25.0.6
+* Thu May 8 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.0-1
+- Update to 25.1.0
+- Sync new bits with Fedora
+
+* Fri Apr 25 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.0~rc2-1
+- Update to 25.1.0~rc2
+- Sync new bits with Fedora, which includes enabling of the asahi driver
 
 * Tue Apr 22 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.0.4-1
 - Update to 25.0.4
