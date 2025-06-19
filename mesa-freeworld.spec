@@ -48,6 +48,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_etnaviv   0
 %global with_tegra     0
 %global with_asahi     1
+%global with_d3d12     0
 %endif
 %global with_freedreno 0
 %global with_panfrost  0
@@ -74,7 +75,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.1.3
+%global ver 25.1.4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -89,9 +90,6 @@ Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
 Patch10:        gnome-shell-glthread-disable.patch
-
-# upstream revert to fix gtk4
-Patch40: 0001-Revert-hasvk-elk-stop-turning-load_push_constants-in.patch
 
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
@@ -186,6 +184,9 @@ BuildRequires:  glslang
 %if 0%{?with_vulkan_hw}
 BuildRequires:  pkgconfig(vulkan)
 %endif
+%if 0%{?with_d3d12}
+BuildRequires:  pkgconfig(DirectX-Headers) >= 1.614.1
+%endif
 
 %description
 %{_description}
@@ -226,8 +227,8 @@ Obsoletes:      mesa-vulkan-devel < %{?epoch:%{epoch}:}%{version}-%{release}
 Conflicts:      %{srcname}-vulkan-drivers%{?_isa}
 
 %description -n %{srcname}-vulkan-drivers-freeworld
-The drivers with support for the Vulkan with support for acclerating decoding
-and encoding of various video codecs.
+The drivers with support for the Vulkan API with support for accelerating
+decoding and encoding of various video codecs, including H.264 and H.265.
 
 %prep
 %autosetup -n %{srcname}-%{ver} -p1
@@ -263,7 +264,7 @@ export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
   -Dplatforms=x11,wayland \
   -Dosmesa=false \
 %if 0%{?with_hardware}
-  -Dgallium-drivers=llvmpipe,virgl,nouveau%{?with_r300:,r300}%{?with_crocus:,crocus}%{?with_i915:,i915}%{?with_iris:,iris}%{?with_vmware:,svga}%{?with_radeonsi:,radeonsi}%{?with_r600:,r600}%{?with_asahi:,asahi}%{?with_freedreno:,freedreno}%{?with_etnaviv:,etnaviv}%{?with_tegra:,tegra}%{?with_vc4:,vc4}%{?with_v3d:,v3d}%{?with_lima:,lima}%{?with_panfrost:,panfrost}%{?with_vulkan_hw:,zink} \
+  -Dgallium-drivers=llvmpipe,virgl,nouveau%{?with_r300:,r300}%{?with_crocus:,crocus}%{?with_i915:,i915}%{?with_iris:,iris}%{?with_vmware:,svga}%{?with_radeonsi:,radeonsi}%{?with_r600:,r600}%{?with_asahi:,asahi}%{?with_freedreno:,freedreno}%{?with_etnaviv:,etnaviv}%{?with_tegra:,tegra}%{?with_vc4:,vc4}%{?with_v3d:,v3d}%{?with_lima:,lima}%{?with_panfrost:,panfrost}%{?with_vulkan_hw:,zink}%{?with_d3d12:,d3d12} \
 %else
   -Dgallium-drivers=llvmpipe,virgl \
 %endif
@@ -438,6 +439,11 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Thu Jun 19 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.4-1
+- Update to 25.1.4
+- sync a few minor bits with Fedora
+- improve description of mesa-vulkan-drivers-freeworld
+
 * Mon Jun 9 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.3-1
 - Update to 25.1.3
 - sync a few minor bits with Fedora
