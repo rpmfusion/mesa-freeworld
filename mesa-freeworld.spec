@@ -381,6 +381,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %if 0%{?with_radeonsi}
 %{_libdir}/dri-freeworld/radeonsi_drv_video.so
 %endif
+%if 0%{?with_d3d12}
+%{_libdir}/dri-freeworld/d3d12_drv_video.so
+%endif
 %{_libdir}/dri-freeworld/virtio_gpu_drv_video.so
 %{_metainfodir}/org.mesa3d.vaapi.freeworld.metainfo.xml
 %license docs/license.rst
@@ -394,6 +397,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 %if 0%{?with_radeonsi}
 %{_libdir}/vdpau/libvdpau_radeonsi.so.1*
+%endif
+%if 0%{?with_d3d12}
+%{_libdir}/vdpau/libvdpau_d3d12.so.1*
 %endif
 %{_libdir}/vdpau/libvdpau_virtio_gpu.so.1*
 %{_metainfodir}/org.mesa3d.vdpau.freeworld.metainfo.xml
