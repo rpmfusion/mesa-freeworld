@@ -48,7 +48,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_etnaviv   0
 %global with_tegra     0
 %global with_asahi     1
-%global with_d3d12     0
+%global with_d3d12     1
 %endif
 %global with_freedreno 0
 %global with_panfrost  0
@@ -77,7 +77,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 25.1.4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -264,7 +264,7 @@ export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
   -Dplatforms=x11,wayland \
   -Dosmesa=false \
 %if 0%{?with_hardware}
-  -Dgallium-drivers=llvmpipe,virgl,nouveau%{?with_r300:,r300}%{?with_crocus:,crocus}%{?with_i915:,i915}%{?with_iris:,iris}%{?with_vmware:,svga}%{?with_radeonsi:,radeonsi}%{?with_r600:,r600}%{?with_asahi:,asahi}%{?with_freedreno:,freedreno}%{?with_etnaviv:,etnaviv}%{?with_tegra:,tegra}%{?with_vc4:,vc4}%{?with_v3d:,v3d}%{?with_lima:,lima}%{?with_panfrost:,panfrost}%{?with_vulkan_hw:,zink} \
+  -Dgallium-drivers=llvmpipe,virgl,nouveau%{?with_r300:,r300}%{?with_crocus:,crocus}%{?with_i915:,i915}%{?with_iris:,iris}%{?with_vmware:,svga}%{?with_radeonsi:,radeonsi}%{?with_r600:,r600}%{?with_asahi:,asahi}%{?with_freedreno:,freedreno}%{?with_etnaviv:,etnaviv}%{?with_tegra:,tegra}%{?with_vc4:,vc4}%{?with_v3d:,v3d}%{?with_lima:,lima}%{?with_panfrost:,panfrost}%{?with_vulkan_hw:,zink}%{?with_d3d12:,d3d12} \
 %else
   -Dgallium-drivers=llvmpipe,virgl \
 %endif
@@ -439,6 +439,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Fri Jun 20 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.4-2
+- Endable D3D12
+
 * Thu Jun 19 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.4-1
 - Update to 25.1.4
 - sync a few minor bits with Fedora
