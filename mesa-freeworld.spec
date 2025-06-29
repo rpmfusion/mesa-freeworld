@@ -77,7 +77,7 @@ Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 25.1.4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        2%{?dist}
+Release:        3%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -445,6 +445,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Sun Jun 29 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.4-3
+- Rebuild
+
 * Fri Jun 20 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.4-2
 - Endable D3D12
 
