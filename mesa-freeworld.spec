@@ -11,28 +11,27 @@ algorithms and decoding only VC1 algorithm.
 %if !0%{?rhel}
 %global with_r300 1
 %global with_r600 1
-%global with_nine 0
-%if 0%{?with_vulkan_hw}
-%global with_nvk %{with_vulkan_hw}
-%endif
 %global with_opencl 0
+%endif
+%if !0%{?rhel} || 0%{?rhel} >= 10
+%global with_nvk %{with_vulkan_hw}
 %endif
 %global base_vulkan %{?with_vulkan_hw:,amd}%{!?with_vulkan_hw:%{nil}}
 %endif
 
-#%%ifnarch %%{ix86}
+%ifnarch %{ix86}
 %if !0%{?rhel}
 %global with_teflon 0
 %endif
-#%%endif
+%endif
 
 %ifarch %{ix86} x86_64
 %global with_crocus 0
-%global with_i915   0
-%global with_iris   0
-%global with_xa     0
-%global with_intel_clc 0
+%global with_iris   1
 %global intel_platform_vulkan %{?with_vulkan_hw:,intel,intel_hasvk}%{!?with_vulkan_hw:%{nil}}
+%if !0%{?rhel}
+%global with_i915   1
+%endif
 %endif
 %ifarch x86_64
 %if !0%{?with_vulkan_hw}
@@ -41,19 +40,18 @@ algorithms and decoding only VC1 algorithm.
 %endif
 
 %ifarch aarch64 x86_64 %{ix86}
-%global with_kmsro     0
 %if !0%{?rhel}
-%global with_lima      0
-%global with_vc4       0
-%global with_etnaviv   0
-%global with_tegra     0
 %global with_asahi     1
 %global with_d3d12     1
+%global with_etnaviv   0
+%global with_lima      0
+%global with_tegra     0
+%global with_vc4       0
+%global with_v3d       0
 %endif
 %global with_freedreno 0
+%global with_kmsro     0
 %global with_panfrost  0
-%global with_v3d       0
-%global with_xa        0
 %if 0%{?with_asahi}
 %global asahi_platform_vulkan %{?with_vulkan_hw:,asahi}%{!?with_vulkan_hw:%{nil}}
 %endif
@@ -63,6 +61,7 @@ algorithms and decoding only VC1 algorithm.
 %if !0%{?rhel}
 %global with_libunwind 1
 %global with_lmsensors 1
+%global with_virtio    1
 %endif
 
 %ifarch %{valgrind_arches}
@@ -71,13 +70,17 @@ algorithms and decoding only VC1 algorithm.
 %bcond_with valgrind
 %endif
 
-%global vulkan_drivers swrast,virtio%{?base_vulkan}%{?intel_platform_vulkan}%{?asahi_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}
+%global vulkan_drivers swrast%{?base_vulkan}%{?intel_platform_vulkan}%{?asahi_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}%{?with_virtio:,virtio}
+
+#%%if 0%%{?with_nvk} && 0%%{?rhel}
+%global vendor_nvk_crates 1
+#%%endif
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.1.4
+%global ver 25.2.1
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        3%{?dist}
+Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -88,6 +91,23 @@ Source0:        https://archive.mesa3d.org/%{srcname}-%{ver}.tar.xz
 Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
+
+# In CentOS/RHEL, Rust crates required to build NVK are vendored.
+# The minimum target versions are obtained from the .wrap files
+# https://gitlab.freedesktop.org/mesa/mesa/-/tree/main/subprojects
+# but we generally want the latest compatible versions
+%global rust_paste_ver 1.0.15
+%global rust_proc_macro2_ver 1.0.101
+%global rust_quote_ver 1.0.40
+%global rust_syn_ver 2.0.106
+%global rust_unicode_ident_ver 1.0.18
+%global rustc_hash_ver 2.1.1
+Source10:       https://crates.io/api/v1/crates/paste/%{rust_paste_ver}/download#/paste-%{rust_paste_ver}.tar.gz
+Source11:       https://crates.io/api/v1/crates/proc-macro2/%{rust_proc_macro2_ver}/download#/proc-macro2-%{rust_proc_macro2_ver}.tar.gz
+Source12:       https://crates.io/api/v1/crates/quote/%{rust_quote_ver}/download#/quote-%{rust_quote_ver}.tar.gz
+Source13:       https://crates.io/api/v1/crates/syn/%{rust_syn_ver}/download#/syn-%{rust_syn_ver}.tar.gz
+Source14:       https://crates.io/api/v1/crates/unicode-ident/%{rust_unicode_ident_ver}/download#/unicode-ident-%{rust_unicode_ident_ver}.tar.gz
+Source15:       https://crates.io/api/v1/crates/rustc-hash/%{rustc_hash_ver}/download#/rustc-hash-%{rustc_hash_ver}.tar.gz
 
 Patch10:        gnome-shell-glthread-disable.patch
 
@@ -108,7 +128,6 @@ BuildRequires:  pkgconfig(libunwind)
 BuildRequires:  pkgconfig(expat)
 BuildRequires:  pkgconfig(zlib) >= 1.2.3
 BuildRequires:  pkgconfig(libzstd)
-BuildRequires:  pkgconfig(libselinux)
 BuildRequires:  pkgconfig(wayland-scanner)
 BuildRequires:  pkgconfig(wayland-protocols) >= 1.34
 BuildRequires:  pkgconfig(wayland-client) >= 1.11
@@ -159,24 +178,20 @@ BuildRequires:  pkgconfig(LLVMSPIRVLib)
 %endif
 %if 0%{?with_opencl} || 0%{?with_nvk}
 BuildRequires:  bindgen
-BuildRequires:  rust-packaging
+%if 0%{?rhel}
+BuildRequires:  rust-toolset
+%else
+BuildRequires:  cargo-rpm-macros
+%endif
 %endif
 %if 0%{?with_nvk}
 BuildRequires:  cbindgen
-BuildRequires:  (crate(paste) >= 1.0.14 with crate(paste) < 2)
-BuildRequires:  (crate(proc-macro2) >= 1.0.56 with crate(proc-macro2) < 2)
-BuildRequires:  (crate(quote) >= 1.0.25 with crate(quote) < 2)
-BuildRequires:  (crate(syn/clone-impls) >= 2.0.15 with crate(syn/clone-impls) < 3)
-BuildRequires:  (crate(unicode-ident) >= 1.0.6 with crate(unicode-ident) < 2)
 %endif
 %if %{with valgrind}
 BuildRequires:  pkgconfig(valgrind)
 %endif
 BuildRequires:  python3-devel
 BuildRequires:  python3-mako
-%if 0%{?with_intel_clc}
-BuildRequires:  python3-ply
-%endif
 BuildRequires:  python3-pycparser
 BuildRequires:  python3-pyyaml
 BuildRequires:  vulkan-headers
@@ -234,21 +249,66 @@ decoding and encoding of various video codecs, including H.264 and H.265.
 %autosetup -n %{srcname}-%{ver} -p1
 cp %{SOURCE1} docs/
 
+# Extract Rust crates meson cache directory
+%if 0%{?vendor_nvk_crates}
+mkdir subprojects/packagecache/
+tar -xvf %{SOURCE10} -C subprojects/packagecache/
+tar -xvf %{SOURCE11} -C subprojects/packagecache/
+tar -xvf %{SOURCE12} -C subprojects/packagecache/
+tar -xvf %{SOURCE13} -C subprojects/packagecache/
+tar -xvf %{SOURCE14} -C subprojects/packagecache/
+tar -xvf %{SOURCE15} -C subprojects/packagecache/
+for d in subprojects/packagecache/*-*; do
+    echo '{"files":{}}' > $d/.cargo-checksum.json
+done
+%endif
+
+%if 0%{?with_nvk}
+cat > Cargo.toml <<_EOF
+[package]
+name = "mesa"
+version = "%{version}"
+edition = "2021"
+
+[lib]
+path = "src/nouveau/nil/lib.rs"
+
+# only direct dependencies need to be listed here
+[dependencies]
+paste = "$(grep ^directory subprojects/paste.wrap | sed 's|.*-||')"
+syn = { version = "$(grep ^directory subprojects/syn.wrap | sed 's|.*-||')", features = ["clone-impls"] }
+rustc-hash = "$(grep ^directory subprojects/rustc-hash.wrap | sed 's|.*-||')"
+_EOF
+%if 0%{?vendor_nvk_crates}
+%cargo_prep -v subprojects/packagecache
+%else
+%cargo_prep
+
+%generate_buildrequires
+%cargo_generate_buildrequires
+%endif
+%endif
+
+
 %build
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%build_rustflags"
 
 %if 0%{?with_nvk}
-export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
 # So... Meson can't actually find them without tweaks
-%define inst_crate_nameversion() %(basename %{cargo_registry}/%{1}-*)
-%define rewrite_wrap_file() sed -e "/source.*/d" -e "s/%{1}-.*/%{inst_crate_nameversion %{1}}/" -i subprojects/%{1}.wrap
+%if !0%{?vendor_nvk_crates}
+export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
+%endif
+rewrite_wrap_file() {
+   sed -e "/source.*/d" -e "s/${1}-.*/$(basename ${MESON_PACKAGE_CACHE_DIR:-subprojects/packagecache}/${1}-*)/" -i subprojects/${1}.wrap
+}
 
-%rewrite_wrap_file proc-macro2
-%rewrite_wrap_file quote
-%rewrite_wrap_file syn
-%rewrite_wrap_file unicode-ident
-%rewrite_wrap_file paste
+rewrite_wrap_file proc-macro2
+rewrite_wrap_file quote
+rewrite_wrap_file syn
+rewrite_wrap_file unicode-ident
+rewrite_wrap_file paste
+rewrite_wrap_file rustc-hash
 %endif
 
 # We've gotten a report that enabling LTO for mesa breaks some games. See
@@ -262,7 +322,6 @@ export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
   -Ddri-drivers-path=%{_libdir}/dri-freeworld \
   -Dva-libs-path=%{_libdir}/dri-freeworld \
   -Dplatforms=x11,wayland \
-  -Dosmesa=false \
 %if 0%{?with_hardware}
   -Dgallium-drivers=llvmpipe,virgl,nouveau%{?with_r300:,r300}%{?with_crocus:,crocus}%{?with_i915:,i915}%{?with_iris:,iris}%{?with_vmware:,svga}%{?with_radeonsi:,radeonsi}%{?with_r600:,r600}%{?with_asahi:,asahi}%{?with_freedreno:,freedreno}%{?with_etnaviv:,etnaviv}%{?with_tegra:,tegra}%{?with_vc4:,vc4}%{?with_v3d:,v3d}%{?with_lima:,lima}%{?with_panfrost:,panfrost}%{?with_vulkan_hw:,zink}%{?with_d3d12:,d3d12} \
 %else
@@ -270,12 +329,10 @@ export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
 %endif
   -Dgallium-vdpau=%{?with_vdpau:enabled}%{!?with_vdpau:disabled} \
   -Dgallium-va=%{?with_va:enabled}%{!?with_va:disabled} \
-  -Dgallium-xa=%{!?with_xa:enabled}%{?with_xa:disabled} \
-  -Dgallium-nine=%{!?with_nine:true}%{?with_nine:false} \
-  -Dteflon=%{!?with_teflon:true}%{?with_teflon:false} \
+  -Dgallium-mediafoundation=disabled \
+  -Dteflon=false \
 %if 0%{?with_opencl}
   -Dgallium-rusticl=true \
-  -Dgallium-opencl=disabled \
 %endif
   -Dvideo-codecs=h264dec,h264enc,h265dec,h265enc,vc1dec,av1dec,av1enc,vp9dec \
   -Dvulkan-drivers=%{?vulkan_drivers} \
@@ -288,16 +345,12 @@ export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
   -Dglx=dri \
   -Degl=disabled \
   -Dglvnd=false \
-%if 0%{?with_intel_clc}
-  -Dintel-clc=enabled \
-%endif
-  -Dintel-rt=%{!?with_intel_vk_rt:enabled}%{?with_intel_vk_rt:disabled} \
+  -Dintel-rt=%{?with_intel_vk_rt:enabled}%{!?with_intel_vk_rt:disabled} \
   -Dmicrosoft-clc=disabled \
   -Dllvm=enabled \
   -Dshared-llvm=enabled \
   -Dvalgrind=%{?with_valgrind:enabled}%{!?with_valgrind:disabled} \
   -Dbuild-tests=false \
-  -Dselinux=true \
 %if !0%{?with_libunwind}
   -Dlibunwind=disabled \
 %endif
@@ -310,6 +363,14 @@ export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
 %endif
   %{nil}
 %meson_build
+
+%if 0%{?with_nvk}
+%cargo_license_summary
+%{cargo_license} > LICENSE.dependencies
+%if 0%{?vendor_nvk_crates}
+%cargo_vendor_manifest
+%endif
+%endif
 
 %install
 %meson_install
@@ -407,12 +468,20 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %files -n %{srcname}-vulkan-drivers-freeworld
+%if 0%{?with_nvk}
+%license LICENSE.dependencies
+%if 0%{?vendor_nvk_crates}
+%license cargo-vendor.txt
+%endif
+%endif
 %{_libdir}/dri-freeworld/libvulkan_lvp.so
 %{_datadir}/vulkan/icd.d/lvp_icd.*.json
-%{_libdir}/dri-freeworld/libvulkan_virtio.so
-%{_datadir}/vulkan/icd.d/virtio_icd.*.json
 %{_libdir}/dri-freeworld/libVkLayer_MESA_device_select.so
 %{_datadir}/vulkan/implicit_layer.d/VkLayer_MESA_device_select.json
+%if 0%{?with_virtio}
+%{_libdir}/dri-freeworld/libvulkan_virtio.so
+%{_datadir}/vulkan/icd.d/virtio_icd.*.json
+%endif
 %if 0%{?with_vulkan_hw}
 %{_libdir}/dri-freeworld/libvulkan_radeon.so
 %{_datadir}/drirc.d/00-radv-defaults.conf
@@ -445,6 +514,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Thu Aug 28 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.1-1
+- Update to 25.2.1
+- sync many bits with recent Fedora changes
+
 * Sun Jul 27 2025 RPM Fusion Release Engineering <sergiomb@rpmfusion.org> - 25.1.4-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_43_Mass_Rebuild
 
