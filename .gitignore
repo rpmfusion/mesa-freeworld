@@ -4,3 +4,4 @@ proc-macro2-*.tar.gz
 quote-*.tar.gz
 syn-*.tar.gz
 unicode-ident-*.tar.gz
+rustc-hash-*.tar.gz
