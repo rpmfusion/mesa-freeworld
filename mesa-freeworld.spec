@@ -72,9 +72,9 @@ algorithms and decoding only VC1 algorithm.
 
 %global vulkan_drivers swrast%{?base_vulkan}%{?intel_platform_vulkan}%{?asahi_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}%{?with_virtio:,virtio}
 
-#%%if 0%%{?with_nvk} && 0%%{?rhel}
+%if 0%{?with_nvk} && 0%{?rhel}
 %global vendor_nvk_crates 1
-#%%endif
+%endif
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
@@ -92,6 +92,7 @@ Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
+%if 0%{?vendor_nvk_crates}
 # In CentOS/RHEL, Rust crates required to build NVK are vendored.
 # The minimum target versions are obtained from the .wrap files
 # https://gitlab.freedesktop.org/mesa/mesa/-/tree/main/subprojects
@@ -108,6 +109,7 @@ Source12:       https://crates.io/api/v1/crates/quote/%{rust_quote_ver}/download
 Source13:       https://crates.io/api/v1/crates/syn/%{rust_syn_ver}/download#/syn-%{rust_syn_ver}.tar.gz
 Source14:       https://crates.io/api/v1/crates/unicode-ident/%{rust_unicode_ident_ver}/download#/unicode-ident-%{rust_unicode_ident_ver}.tar.gz
 Source15:       https://crates.io/api/v1/crates/rustc-hash/%{rustc_hash_ver}/download#/rustc-hash-%{rustc_hash_ver}.tar.gz
+%endif
 
 Patch10:        gnome-shell-glthread-disable.patch
 
@@ -279,6 +281,7 @@ paste = "$(grep ^directory subprojects/paste.wrap | sed 's|.*-||')"
 syn = { version = "$(grep ^directory subprojects/syn.wrap | sed 's|.*-||')", features = ["clone-impls"] }
 rustc-hash = "$(grep ^directory subprojects/rustc-hash.wrap | sed 's|.*-||')"
 _EOF
+
 %if 0%{?vendor_nvk_crates}
 %cargo_prep -v subprojects/packagecache
 %else
@@ -288,7 +291,6 @@ _EOF
 %cargo_generate_buildrequires
 %endif
 %endif
-
 
 %build
 # ensure standard Rust compiler flags are set
