@@ -75,7 +75,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.1.7
+%global ver 25.1.9
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -445,6 +445,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Tue Sep 16 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.9-1
+- Update to 25.1.9
+
 * Fri Aug 8 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.1.7-1
 - Update to 25.1.7
 
