@@ -6,6 +6,7 @@ algorithms and decoding only VC1 algorithm.
 %global with_radeonsi 1
 %global with_vmware 1
 %global with_vulkan_hw 1
+%global with_vdpau 1
 %global with_va 1
 %if !0%{?rhel}
 %global with_r300 1
@@ -77,7 +78,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.2.5
+%global ver 25.2.4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -89,6 +90,7 @@ Source0:        https://archive.mesa3d.org/%{srcname}-%{ver}.tar.xz
 # Fedora opts to ignore the optional part of clause 2 and treat that code as 2 clause BSD.
 Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
+Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
 %if 0%{?vendor_nvk_crates}
 # In CentOS/RHEL, Rust crates required to build NVK are vendored.
@@ -157,6 +159,9 @@ BuildRequires:  flex
 %if 0%{?with_lmsensors}
 BuildRequires:  lm_sensors-devel
 %endif
+%if 0%{?with_vdpau}
+BuildRequires:  pkgconfig(vdpau) >= 1.1
+%endif
 %if 0%{?with_va}
 BuildRequires:  pkgconfig(libva) >= 0.38.0
 %endif
@@ -210,9 +215,18 @@ Summary:        Mesa-based VA-API drivers
 Requires:       %{srcname}-filesystem%{?_isa} = %{?epoch:%{epoch}:}%{version}
 Provides:       %{srcname}-va-drivers = %{?epoch:%{epoch}:}%{version}-%{release}
 Provides:       %{srcname}-va-drivers%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
-Obsoletes:      %{srcname}-vdpau-drivers-freeworld < %{?epoch:%{epoch}:}%{version}-%{release}
 
 %description    -n %{srcname}-va-drivers-freeworld
+%{_description}
+%endif
+
+%if 0%{?with_vdpau}
+%package        -n %{srcname}-vdpau-drivers-freeworld
+Summary:        Mesa-based VDPAU drivers
+Requires:       %{srcname}-filesystem%{?_isa} = %{?epoch:%{epoch}:}%{version}
+Conflicts:      %{srcname}-vdpau-drivers%{?_isa}
+
+%description 	-n %{srcname}-vdpau-drivers-freeworld
 %{_description}
 %endif
 
@@ -307,6 +321,7 @@ rewrite_wrap_file rustc-hash
 
 %meson \
   --libdir=%{_libdir}/dri-freeworld \
+  -Dvdpau-libs-path=%{_libdir}/vdpau \
   -Ddri-drivers-path=%{_libdir}/dri-freeworld \
   -Dva-libs-path=%{_libdir}/dri-freeworld \
   -Dplatforms=x11,wayland \
@@ -315,7 +330,7 @@ rewrite_wrap_file rustc-hash
 %else
   -Dgallium-drivers=llvmpipe,virgl \
 %endif
-  -Dgallium-vdpau=disabled\
+  -Dgallium-vdpau=%{?with_vdpau:enabled}%{!?with_vdpau:disabled} \
   -Dgallium-va=%{?with_va:enabled}%{!?with_va:disabled} \
   -Dgallium-mediafoundation=disabled \
   -Dteflon=false \
@@ -366,8 +381,11 @@ rewrite_wrap_file rustc-hash
 # install Appdata files
 mkdir -p %{buildroot}%{_metainfodir}
 install -pm 0644 %{SOURCE2} %{buildroot}%{_metainfodir}
+install -pm 0644 %{SOURCE3} %{buildroot}%{_metainfodir}
 
-# glvnd opens the versioned name, don't bother including the unversioned
+# libvdpau opens the versioned name, don't bother including the unversioned
+rm -vf %{buildroot}%{_libdir}/vdpau/*.so
+# likewise glvnd
 rm -vf %{buildroot}%{_libdir}/libGLX_mesa.so
 rm -vf %{buildroot}%{_libdir}/libEGL_mesa.so
 # XXX can we just not build this
@@ -390,7 +408,7 @@ for i in libGL.so ; do
 done
 popd
 
-# strip unneeded files from va-api
+# strip unneeded files from va-api and vdpau
 rm -rf %{buildroot}%{_datadir}/{drirc.d/00-mesa-defaults.conf,glvnd}
 rm -rf %{buildroot}%{_libdir}{,/dri-freeworld}/{d3d,EGL,gallium-pipe,libGLX,pkgconfig}
 rm -rf %{buildroot}%{_includedir}/{d3dadapter,EGL,GL,KHR}
@@ -432,6 +450,23 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 %{_libdir}/dri-freeworld/virtio_gpu_drv_video.so
 %{_metainfodir}/org.mesa3d.vaapi.freeworld.metainfo.xml
+%license docs/license.rst
+%endif
+
+%if 0%{?with_vdpau}
+%files -n %{srcname}-vdpau-drivers-freeworld
+%{_libdir}/vdpau/libvdpau_nouveau.so.1*
+%if 0%{?with_r600}
+%{_libdir}/vdpau/libvdpau_r600.so.1*
+%endif
+%if 0%{?with_radeonsi}
+%{_libdir}/vdpau/libvdpau_radeonsi.so.1*
+%endif
+%if 0%{?with_d3d12}
+%{_libdir}/vdpau/libvdpau_d3d12.so.1*
+%endif
+%{_libdir}/vdpau/libvdpau_virtio_gpu.so.1*
+%{_metainfodir}/org.mesa3d.vdpau.freeworld.metainfo.xml
 %license docs/license.rst
 %endif
 
@@ -482,14 +517,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
-* Thu Oct 16 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.5-1
-- Update to 25.2.5
-- Follow Fedora and drop VDPAU support
-
 * Fri Oct 3 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.4-1
 - Update to 25.2.4
 
-* Mon Sep 22 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.3-1
+* Thu Sep 22 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.3-1
 - Update to 25.2.3
 
 * Thu Sep 4 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.2-1
