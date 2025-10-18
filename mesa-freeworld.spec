@@ -78,9 +78,9 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.2.4
+%global ver 25.2.5
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -517,10 +517,17 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Sat Oct 18 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.5-2
+- Reenable VDPAU support for f43
+
+* Thu Oct 16 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.5-1
+- Update to 25.2.5
+- Follow Fedora and drop VDPAU support
+
 * Fri Oct 3 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.4-1
 - Update to 25.2.4
 
-* Thu Sep 22 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.3-1
+* Mon Sep 22 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.3-1
 - Update to 25.2.3
 
 * Thu Sep 4 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.2-1
