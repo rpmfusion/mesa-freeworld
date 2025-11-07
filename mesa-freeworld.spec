@@ -414,6 +414,8 @@ rm -fr %{buildroot}%{_libdir}/dri/*_dri.so
 rm -fr %{buildroot}%{_includedir}/GLES*
 rm -fr %{buildroot}%{_libdir}/dri-freeworld/libGLES*
 rm -fr %{buildroot}%{_prefix}/lib%{_libdir}/dri-freeworld/libGLES*
+rm -fr %{buildroot}%{_bindir}/spirv2dxil
+rm -fr %{buildroot}%{_libdir}/libspirv_to_dxil.*
 
 # ld.so.conf.d file
 install -m 0755 -d  %{buildroot}%{_sysconfdir}/ld.so.conf.d/
