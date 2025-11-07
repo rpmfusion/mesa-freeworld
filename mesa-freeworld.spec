@@ -69,7 +69,7 @@ algorithms and decoding only VC1 algorithm.
 %bcond_with valgrind
 %endif
 
-%global vulkan_drivers swrast%{?base_vulkan}%{?intel_platform_vulkan}%{?asahi_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}%{?with_virtio:,virtio}
+%global vulkan_drivers swrast%{?base_vulkan}%{?intel_platform_vulkan}%{?asahi_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}%{?with_virtio:,virtio}%{?with_d3d12:,microsoft-experimental}
 
 %if 0%{?with_nvk} && 0%{?rhel}
 %global vendor_nvk_crates 1
@@ -77,7 +77,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.2.5
+%global ver 25.2.6
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -109,7 +109,12 @@ Source14:       https://crates.io/api/v1/crates/unicode-ident/%{rust_unicode_ide
 Source15:       https://crates.io/api/v1/crates/rustc-hash/%{rustc_hash_ver}/download#/rustc-hash-%{rustc_hash_ver}.tar.gz
 %endif
 
-Patch10:        gnome-shell-glthread-disable.patch
+# fix zink/device-select bug
+Patch10:        0001-device-select-add-a-layer-setting-to-disable-device-.patch
+Patch11:        0002-zink-use-device-select-layer-settings-to-disable-dev.patch
+
+# fix c11/threads builds problem on f44
+Patch20:        0001-c11-threads-fix-build-on-fedora-44.patch
 
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
@@ -168,7 +173,7 @@ BuildRequires:  flatbuffers-devel
 BuildRequires:  flatbuffers-compiler
 BuildRequires:  xtensor-devel
 %endif
-%if 0%{?with_opencl} || 0%{?with_nvk} || 0%{?with_intel_clc} || 0%{?with_asahi} || 0%{?with_panfrost}
+%if 0%{?with_opencl} || 0%{?with_nvk} || 0%{?with_asahi} || 0%{?with_panfrost}
 BuildRequires:  clang-devel
 BuildRequires:  pkgconfig(libclc)
 BuildRequires:  pkgconfig(SPIRV-Tools)
@@ -268,7 +273,6 @@ paste = "$(grep ^directory subprojects/paste.wrap | sed 's|.*-||')"
 syn = { version = "$(grep ^directory subprojects/syn.wrap | sed 's|.*-||')", features = ["clone-impls"] }
 rustc-hash = "$(grep ^directory subprojects/rustc-hash.wrap | sed 's|.*-||')"
 _EOF
-
 %if 0%{?vendor_nvk_crates}
 %cargo_prep -v subprojects/packagecache
 %else
@@ -278,6 +282,7 @@ _EOF
 %cargo_generate_buildrequires
 %endif
 %endif
+
 
 %build
 # ensure standard Rust compiler flags are set
@@ -458,6 +463,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %{_libdir}/dri-freeworld/libvulkan_nouveau.so
 %{_datadir}/vulkan/icd.d/nouveau_icd.*.json
 %endif
+%if 0%{?with_d3d12}
+%{_libdir}/dri-freeworld/libvulkan_dzn.so
+%{_datadir}/vulkan/icd.d/dzn_icd.*.json
+%endif
 %ifarch %{ix86} x86_64
 %{_libdir}/dri-freeworld/libvulkan_intel.so
 %{_datadir}/vulkan/icd.d/intel_icd.*.json
@@ -482,6 +491,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Fri Nov 7 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.6-1
+- Update to 25.2.5
+- sync various bits with recent Fedora changes
+
 * Thu Oct 16 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.5-1
 - Update to 25.2.5
 - Follow Fedora and drop VDPAU support
