@@ -491,7 +491,7 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %{_libdir}/dri-freeworld/libvulkan_intel_hasvk.so
 %{_datadir}/vulkan/icd.d/intel_hasvk_icd.*.json
 %endif
-%ifnarch s390x
+%ifarch aarch64 x86_64 %{ix86}
 %if 0%{?with_asahi}
 %{_libdir}/dri-freeworld/libvulkan_asahi.so
 %{_datadir}/vulkan/icd.d/asahi_icd.*.json
