@@ -1,4 +1,4 @@
-From 019f9e091d79fac9acf2197efb748397a263a081 Mon Sep 17 00:00:00 2001
+From 827f018fbfefed68705ab6df62b3c01b7baeb2f4 Mon Sep 17 00:00:00 2001
 From: Dave Airlie <airlied@redhat.com>
 Date: Wed, 5 Nov 2025 11:01:05 +1000
 Subject: [PATCH 1/2] device-select: add a layer setting to disable device
@@ -14,8 +14,9 @@ zink/vulkan initialises later and tries to connect to the compositor.
 This uses a VK_EXT_layer_setting to add a bypass setting.
 ---
  .../VkLayer_MESA_device_select.json.in        |  6 +++
- .../device-select-layer/device_select_layer.c | 47 +++++++++++++++----
- 2 files changed, 43 insertions(+), 10 deletions(-)
+ .../device-select-layer/device_select.h       |  5 +-
+ .../device-select-layer/device_select_layer.c | 46 ++++++++++++++-----
+ 3 files changed, 45 insertions(+), 12 deletions(-)
 
 diff --git a/src/vulkan/device-select-layer/VkLayer_MESA_device_select.json.in b/src/vulkan/device-select-layer/VkLayer_MESA_device_select.json.in
 index 40d6ea8cd8b..1623381a81a 100644
@@ -34,27 +35,37 @@ index 40d6ea8cd8b..1623381a81a 100644
      "functions": {
        "vkNegotiateLoaderLayerInterfaceVersion": "vkNegotiateLoaderLayerInterfaceVersion"
      },
-diff --git a/src/vulkan/device-select-layer/device_select_layer.c b/src/vulkan/device-select-layer/device_select_layer.c
-index 19cfc556f54..d5ba5784ea8 100644
---- a/src/vulkan/device-select-layer/device_select_layer.c
-+++ b/src/vulkan/device-select-layer/device_select_layer.c
-@@ -54,7 +54,8 @@ struct instance_info {
+diff --git a/src/vulkan/device-select-layer/device_select.h b/src/vulkan/device-select-layer/device_select.h
+index f4423b495c5..1a71ee4d6ae 100644
+--- a/src/vulkan/device-select-layer/device_select.h
++++ b/src/vulkan/device-select-layer/device_select.h
+@@ -39,9 +39,12 @@ struct instance_info {
     PFN_vkGetPhysicalDeviceProperties2 GetPhysicalDeviceProperties2;
     bool has_pci_bus, has_vulkan11;
     bool has_wayland, has_xcb;
 -   bool zink, xwayland, xserver;
 +   bool xserver;
-+   bool bypass_device_select;
- };
  
- static struct hash_table *device_select_instance_ht = NULL;
-@@ -118,10 +119,34 @@ static VkResult device_select_CreateInstance(const VkInstanceCreateInfo *pCreate
-                                              const VkAllocationCallbacks *pAllocator,
-                                              VkInstance *pInstance)
++   /* don't do device selection */
++   bool bypass_device_select;
+    bool debug;
++
+    char *selection;
+    char *dri_prime;
+    bool force_default_device;
+diff --git a/src/vulkan/device-select-layer/device_select_layer.c b/src/vulkan/device-select-layer/device_select_layer.c
+index 03c71631ee0..24e597792cb 100644
+--- a/src/vulkan/device-select-layer/device_select_layer.c
++++ b/src/vulkan/device-select-layer/device_select_layer.c
+@@ -89,12 +89,34 @@ static VkResult
+ device_select_CreateInstance(const VkInstanceCreateInfo *pCreateInfo,
+                              const VkAllocationCallbacks *pAllocator, VkInstance *pInstance)
  {
 -   VkLayerInstanceCreateInfo *chain_info;
--   for(chain_info = (VkLayerInstanceCreateInfo*)pCreateInfo->pNext; chain_info; chain_info = (VkLayerInstanceCreateInfo*)chain_info->pNext)
--      if(chain_info->sType == VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO && chain_info->function == VK_LAYER_LINK_INFO)
+-   for (chain_info = (VkLayerInstanceCreateInfo *)pCreateInfo->pNext; chain_info;
+-        chain_info = (VkLayerInstanceCreateInfo *)chain_info->pNext)
+-      if (chain_info->sType == VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO &&
+-          chain_info->function == VK_LAYER_LINK_INFO)
 +   const VkLayerInstanceCreateInfo *chain_info = NULL;
 +   bool bypass_device_select = false;
 +   vk_foreach_struct_const(s, pCreateInfo->pNext) {
@@ -86,15 +97,15 @@ index 19cfc556f54..d5ba5784ea8 100644
  
     assert(chain_info->u.pLayerInfo);
  
-@@ -131,7 +156,6 @@ static VkResult device_select_CreateInstance(const VkInstanceCreateInfo *pCreate
+@@ -106,7 +128,6 @@ device_select_CreateInstance(const VkInstanceCreateInfo *pCreateInfo,
        return VK_ERROR_INITIALIZATION_FAILED;
     }
  
 -   chain_info->u.pLayerInfo = chain_info->u.pLayerInfo->pNext;
  
-    const char *engineName = pCreateInfo->pApplicationInfo && pCreateInfo->pApplicationInfo->pEngineName ? pCreateInfo->pApplicationInfo->pEngineName : "";
-    const char *applicationName = pCreateInfo->pApplicationInfo && pCreateInfo->pApplicationInfo->pApplicationName ? pCreateInfo->pApplicationInfo->pApplicationName : "";
-@@ -140,10 +164,10 @@ static VkResult device_select_CreateInstance(const VkInstanceCreateInfo *pCreate
+    const char *engineName =
+       pCreateInfo->pApplicationInfo && pCreateInfo->pApplicationInfo->pEngineName
+@@ -121,10 +142,10 @@ device_select_CreateInstance(const VkInstanceCreateInfo *pCreateInfo,
        return result;
     }
  
@@ -106,11 +117,11 @@ index 19cfc556f54..d5ba5784ea8 100644
 -   info->xwayland = !strcmp(applicationName, "Xwayland");
     info->xserver = !strcmp(applicationName, "Xorg") || !strcmp(applicationName, "Xephyr");
  
-    bool has_wayland = getenv("WAYLAND_DISPLAY") || getenv("WAYLAND_SOCKET");
-@@ -156,15 +180,18 @@ static VkResult device_select_CreateInstance(const VkInstanceCreateInfo *pCreate
- #endif
+ #ifdef VK_USE_PLATFORM_WAYLAND_KHR
+@@ -143,15 +164,18 @@ device_select_CreateInstance(const VkInstanceCreateInfo *pCreateInfo,
  #ifdef VK_USE_PLATFORM_XCB_KHR
-       if (!strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_KHR_XCB_SURFACE_EXTENSION_NAME) && has_xcb)
+       if (!strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_KHR_XCB_SURFACE_EXTENSION_NAME) &&
+           has_xcb)
 -         info->has_xcb = !info->xserver || !info->zink;
 +         info->has_xcb = !info->xserver || !zink;
  #endif
@@ -127,24 +138,24 @@ index 19cfc556f54..d5ba5784ea8 100644
     info->has_vulkan11 = pCreateInfo->pApplicationInfo &&
                          pCreateInfo->pApplicationInfo->apiVersion >= VK_MAKE_VERSION(1, 1, 0);
  
-@@ -558,7 +585,7 @@ static VkResult device_select_EnumeratePhysicalDevices(VkInstance instance,
+@@ -252,7 +276,7 @@ device_select_EnumeratePhysicalDevices(VkInstance instance, uint32_t *pPhysicalD
+    uint32_t physical_device_count = 0;
     uint32_t selected_physical_device_count = 0;
-    const char* selection = getenv("MESA_VK_DEVICE_SELECT");
     bool expose_only_one_dev = false;
 -   if (info->zink && info->xwayland)
 +   if (info->bypass_device_select)
        return info->EnumeratePhysicalDevices(instance, pPhysicalDeviceCount, pPhysicalDevices);
     VkResult result = info->EnumeratePhysicalDevices(instance, &physical_device_count, NULL);
     VK_OUTARRAY_MAKE_TYPED(VkPhysicalDevice, out, pPhysicalDevices, pPhysicalDeviceCount);
-@@ -643,7 +670,7 @@ static VkResult device_select_EnumeratePhysicalDeviceGroups(VkInstance instance,
+@@ -340,7 +364,7 @@ device_select_EnumeratePhysicalDeviceGroups(VkInstance instance,
     struct instance_info *info = device_select_layer_get_instance(instance);
     uint32_t physical_device_group_count = 0;
     uint32_t selected_physical_device_group_count = 0;
 -   if (info->zink && info->xwayland)
 +   if (info->bypass_device_select)
-       return info->EnumeratePhysicalDeviceGroups(instance, pPhysicalDeviceGroupCount, pPhysicalDeviceGroups);
-    VkResult result = info->EnumeratePhysicalDeviceGroups(instance, &physical_device_group_count, NULL);
-    VK_OUTARRAY_MAKE_TYPED(VkPhysicalDeviceGroupProperties, out, pPhysicalDeviceGroups, pPhysicalDeviceGroupCount);
+       return info->EnumeratePhysicalDeviceGroups(instance, pPhysicalDeviceGroupCount,
+                                                  pPhysicalDeviceGroups);
+    VkResult result =
 -- 
 2.51.1
 

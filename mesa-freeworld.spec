@@ -3,7 +3,9 @@
 algorithms and decoding only VC1 algorithm.
 %ifnarch s390x
 %global with_hardware 1
+%global with_kmsro     0
 %global with_radeonsi 1
+%global with_spirv_tools 1
 %global with_vmware 1
 %global with_vulkan_hw 1
 %global with_va 1
@@ -11,9 +13,6 @@ algorithms and decoding only VC1 algorithm.
 %global with_r300 1
 %global with_r600 1
 %global with_opencl 0
-%endif
-%if !0%{?rhel} || 0%{?rhel} >= 10
-%global with_nvk %{with_vulkan_hw}
 %endif
 %global base_vulkan %{?with_vulkan_hw:,amd}%{!?with_vulkan_hw:%{nil}}
 %endif
@@ -49,12 +48,11 @@ algorithms and decoding only VC1 algorithm.
 %global with_v3d       0
 %endif
 %global with_freedreno 0
-%global with_kmsro     0
 %global with_panfrost  0
 %if 0%{?with_asahi}
 %global asahi_platform_vulkan %{?with_vulkan_hw:,asahi}%{!?with_vulkan_hw:%{nil}}
 %endif
-%global extra_platform_vulkan %{?with_vulkan_hw:,broadcom,freedreno,panfrost,imagination-experimental}%{!?with_vulkan_hw:%{nil}}
+%global extra_platform_vulkan %{?with_vulkan_hw:,broadcom,freedreno,panfrost,imagination}%{!?with_vulkan_hw:%{nil}}
 %endif
 
 %if !0%{?rhel}
@@ -77,7 +75,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.2.6
+%global ver 25.3.0
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -113,9 +111,6 @@ Source15:       https://crates.io/api/v1/crates/rustc-hash/%{rustc_hash_ver}/dow
 Patch10:        0001-device-select-add-a-layer-setting-to-disable-device-.patch
 Patch11:        0002-zink-use-device-select-layer-settings-to-disable-dev.patch
 
-# fix c11/threads builds problem on f44
-Patch20:        0001-c11-threads-fix-build-on-fedora-44.patch
-
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
@@ -139,6 +134,7 @@ BuildRequires:  pkgconfig(wayland-protocols) >= 1.34
 BuildRequires:  pkgconfig(wayland-client) >= 1.11
 BuildRequires:  pkgconfig(wayland-server) >= 1.11
 BuildRequires:  pkgconfig(wayland-egl-backend) >= 3
+BuildRequires:  pkgconfig(libdisplay-info)
 BuildRequires:  pkgconfig(x11)
 BuildRequires:  pkgconfig(xext)
 BuildRequires:  pkgconfig(xdamage) >= 1.1
@@ -261,7 +257,7 @@ done
 cat > Cargo.toml <<_EOF
 [package]
 name = "mesa"
-version = "%{version}"
+version = "%{ver}"
 edition = "2021"
 
 [lib]
@@ -269,9 +265,9 @@ path = "src/nouveau/nil/lib.rs"
 
 # only direct dependencies need to be listed here
 [dependencies]
-paste = "$(grep ^directory subprojects/paste.wrap | sed 's|.*-||')"
-syn = { version = "$(grep ^directory subprojects/syn.wrap | sed 's|.*-||')", features = ["clone-impls"] }
-rustc-hash = "$(grep ^directory subprojects/rustc-hash.wrap | sed 's|.*-||')"
+paste = "$(grep ^directory subprojects/paste*.wrap | sed 's|.*-||')"
+syn = { version = "$(grep ^directory subprojects/syn*.wrap | sed 's|.*-||')", features = ["clone-impls"] }
+rustc-hash = "$(grep ^directory subprojects/rustc-hash*.wrap | sed 's|.*-||')"
 _EOF
 %if 0%{?vendor_nvk_crates}
 %cargo_prep -v subprojects/packagecache
@@ -293,8 +289,27 @@ export RUSTFLAGS="%build_rustflags"
 %if !0%{?vendor_nvk_crates}
 export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
 %endif
+
+# This function rewrites a mesa .wrap file:
+# - Removes the lines that start with "source"
+# - Replaces the "directory =" with the MESON_PACKAGE_CACHE_DIR
+#
+# Example: An upstream .wrap file like this (proc-macro2-1-rs.wrap):
+#
+# [wrap-file]
+# directory = proc-macro2-1.0.86
+# source_url = https://crates.io/api/v1/crates/proc-macro2/1.0.86/download
+# source_filename = proc-macro2-1.0.86.tar.gz
+# source_hash = 5e719e8df665df0d1c8fbfd238015744736151d4445ec0836b8e628aae103b77
+# patch_directory = proc-macro2-1-rs
+#
+# Will be transformed to:
+#
+# [wrap-file]
+# directory = meson-package-cache-dir
+# patch_directory = proc-macro2-1-rs
 rewrite_wrap_file() {
-   sed -e "/source.*/d" -e "s/${1}-.*/$(basename ${MESON_PACKAGE_CACHE_DIR:-subprojects/packagecache}/${1}-*)/" -i subprojects/${1}.wrap
+  sed -e "/source.*/d" -e "s/^directory = ${1}-.*/directory = $(basename ${MESON_PACKAGE_CACHE_DIR:-subprojects/packagecache}/${1}-*)/" -i subprojects/${1}*.wrap
 }
 
 rewrite_wrap_file proc-macro2
@@ -320,7 +335,6 @@ rewrite_wrap_file rustc-hash
 %else
   -Dgallium-drivers=llvmpipe,virgl \
 %endif
-  -Dgallium-vdpau=disabled\
   -Dgallium-va=%{?with_va:enabled}%{!?with_va:disabled} \
   -Dgallium-mediafoundation=disabled \
   -Dteflon=false \
@@ -354,6 +368,7 @@ rewrite_wrap_file rustc-hash
 %ifarch %{ix86}
   -Dglx-read-only-text=true \
 %endif
+  -Dspirv-tools=%{?with_spirv_tools:enabled}%{!?with_spirv_tools:disabled} \
   %{nil}
 %meson_build
 
@@ -475,7 +490,7 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %{_libdir}/dri-freeworld/libvulkan_intel_hasvk.so
 %{_datadir}/vulkan/icd.d/intel_hasvk_icd.*.json
 %endif
-%ifarch aarch64 x86_64 %{ix86}
+%ifnarch s390x
 %if 0%{?with_asahi}
 %{_libdir}/dri-freeworld/libvulkan_asahi.so
 %{_datadir}/vulkan/icd.d/asahi_icd.*.json
@@ -486,13 +501,16 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %{_datadir}/vulkan/icd.d/freedreno_icd.*.json
 %{_libdir}/dri-freeworld/libvulkan_panfrost.so
 %{_datadir}/vulkan/icd.d/panfrost_icd.*.json
-%{_libdir}/dri-freeworld/libpowervr_rogue.so
 %{_libdir}/dri-freeworld/libvulkan_powervr_mesa.so
 %{_datadir}/vulkan/icd.d/powervr_mesa_icd.*.json
 %endif
 %endif
 
 %changelog
+* Mon Nov 17 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.0-1
+- Update to 25.3.0
+- sync various bits with recent Fedora changes
+
 * Fri Nov 7 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.6-1
 - Update to 25.2.5
 - sync various bits with recent Fedora changes
