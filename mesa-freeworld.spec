@@ -4,6 +4,7 @@ algorithms and decoding only VC1 algorithm.
 %ifnarch s390x
 %global with_hardware 1
 %global with_kmsro     0
+%global with_nvk 1
 %global with_radeonsi 1
 %global with_spirv_tools 1
 %global with_vmware 1
