@@ -78,7 +78,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.2.6
+%global ver 25.2.7
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -112,6 +112,10 @@ Source15:       https://crates.io/api/v1/crates/rustc-hash/%{rustc_hash_ver}/dow
 %endif
 
 Patch10:        gnome-shell-glthread-disable.patch
+
+# fix zink/device-select bug
+Patch11:        0001-device-select-add-a-layer-setting-to-disable-device-.patch
+Patch12:        0002-zink-use-device-select-layer-settings-to-disable-dev.patch
 
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
@@ -517,6 +521,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Mon Nov 17 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.7-1
+- Update to 25.2.7
+- add patches Fedora started applying
+
 * Wed Nov 5 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.6-1
 - Update to 25.2.6
 
