@@ -1,4 +1,4 @@
-From 0938230bd78c8e329261e03018b8a879b255c726 Mon Sep 17 00:00:00 2001
+From 08437430ba3a02dbd4b306681bed1c9550c3296f Mon Sep 17 00:00:00 2001
 From: Dave Airlie <airlied@redhat.com>
 Date: Wed, 5 Nov 2025 11:02:26 +1000
 Subject: [PATCH 2/2] zink: use device select layer settings to disable device
@@ -16,7 +16,7 @@ device selection anyways.
  2 files changed, 26 insertions(+), 1 deletion(-)
 
 diff --git a/src/gallium/drivers/zink/zink_instance.py b/src/gallium/drivers/zink/zink_instance.py
-index 5c747209978..cfcfe2cb0c7 100755
+index 9de653ab820..b0906bf0b47 100755
 --- a/src/gallium/drivers/zink/zink_instance.py
 +++ b/src/gallium/drivers/zink/zink_instance.py
 @@ -37,6 +37,7 @@ import platform
@@ -27,7 +27,7 @@ index 5c747209978..cfcfe2cb0c7 100755
      Extension("VK_KHR_get_physical_device_properties2"),
      Extension("VK_KHR_external_memory_capabilities"),
      Extension("VK_KHR_external_semaphore_capabilities"),
-@@ -63,8 +64,10 @@ LAYERS = [
+@@ -62,8 +63,10 @@ LAYERS = [
        conditions=["zink_debug & ZINK_DEBUG_VALIDATION"]),
      Layer("VK_LAYER_LUNARG_standard_validation",
        conditions=["zink_debug & ZINK_DEBUG_VALIDATION", "!have_layer_KHRONOS_validation"]),
@@ -38,7 +38,7 @@ index 5c747209978..cfcfe2cb0c7 100755
  REPLACEMENTS = {
      "VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES2_EXTENSION_NAME" : "VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME"
  }
-@@ -88,6 +91,7 @@ struct zink_screen;
+@@ -87,6 +90,7 @@ struct zink_screen;
  
  struct zink_instance_info {
     uint32_t loader_version;
@@ -46,7 +46,7 @@ index 5c747209978..cfcfe2cb0c7 100755
  
  %for ext in extensions:
     bool have_${ext.name_with_vendor()};
-@@ -262,6 +266,20 @@ zink_create_instance(struct zink_screen *screen, struct zink_instance_info *inst
+@@ -261,6 +265,20 @@ zink_create_instance(struct zink_screen *screen, struct zink_instance_info *inst
     ici.ppEnabledLayerNames = layers;
     ici.enabledLayerCount = num_layers;
  

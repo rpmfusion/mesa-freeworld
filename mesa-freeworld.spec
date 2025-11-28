@@ -74,11 +74,16 @@ algorithms and decoding only VC1 algorithm.
 %global vendor_nvk_crates 1
 %endif
 
+# We've gotten a report that enabling LTO for mesa breaks some games. See
+# https://bugzilla.redhat.com/show_bug.cgi?id=1862771 for details.
+# Disable LTO for now
+%global _lto_cflags %nil
+
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 %global ver 25.3.0
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
 
@@ -321,11 +326,6 @@ rewrite_wrap_file paste
 rewrite_wrap_file rustc-hash
 %endif
 
-# We've gotten a report that enabling LTO for mesa breaks some games. See
-# https://bugzilla.redhat.com/show_bug.cgi?id=1862771 for details.
-# Disable LTO for now
-%define _lto_cflags %{nil}
-
 %meson \
   --libdir=%{_libdir}/dri-freeworld \
   -Ddri-drivers-path=%{_libdir}/dri-freeworld \
@@ -508,6 +508,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Fri Nov 28 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.0-2
+- Update vulkan device select layer patches
+- Disable LTO globally
+
 * Mon Nov 17 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.0-1
 - Update to 25.3.0
 - sync various bits with recent Fedora changes
