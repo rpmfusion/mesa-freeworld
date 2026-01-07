@@ -81,7 +81,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.3.1
+%global ver 25.3.3
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -508,6 +508,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Wed Jan 07 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.1-3
+- Update to 25.3.3
+
 * Fri Dec 05 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.1-1
 - Update to 25.3.1
 - Fix DirectX-Headers minimal required version for 25.3.0
