@@ -3,7 +3,7 @@
 algorithms and decoding only VC1 algorithm.
 %ifnarch s390x
 %global with_hardware 1
-%global with_kmsro     0
+%global with_kmsro 0
 %global with_nvk 1
 %global with_radeonsi 1
 %global with_spirv_tools 1
@@ -33,7 +33,7 @@ algorithms and decoding only VC1 algorithm.
 %endif
 %endif
 %ifarch x86_64
-%if !0%{?with_vulkan_hw}
+%if 0%{?with_vulkan_hw}
 %global with_intel_vk_rt 1
 %endif
 %endif
@@ -81,7 +81,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.3.3
+%global ver 25.3.4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -113,9 +113,8 @@ Source14:       https://crates.io/api/v1/crates/unicode-ident/%{rust_unicode_ide
 Source15:       https://crates.io/api/v1/crates/rustc-hash/%{rustc_hash_ver}/download#/rustc-hash-%{rustc_hash_ver}.tar.gz
 %endif
 
-# fix zink/device-select bug
-Patch10:        0001-device-select-add-a-layer-setting-to-disable-device-.patch
-Patch11:        0002-zink-use-device-select-layer-settings-to-disable-dev.patch
+# Teflon: https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/38532
+Patch12:        mesa-38532.patch
 
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
@@ -508,7 +507,11 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
-* Wed Jan 07 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.1-3
+* Tue Jan 27 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.4-3
+- Update to 25.3.4
+- sync various bits with recent Fedora changes
+
+* Wed Jan 07 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.3-3
 - Update to 25.3.3
 
 * Fri Dec 05 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.1-1
