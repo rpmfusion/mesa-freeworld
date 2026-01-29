@@ -3,18 +3,17 @@
 algorithms and decoding only VC1 algorithm.
 %ifnarch s390x
 %global with_hardware 1
+%global with_kmsro 0
+%global with_nvk 1
 %global with_radeonsi 1
+%global with_spirv_tools 1
 %global with_vmware 1
 %global with_vulkan_hw 1
-%global with_vdpau 1
 %global with_va 1
 %if !0%{?rhel}
 %global with_r300 1
 %global with_r600 1
 %global with_opencl 0
-%endif
-%if !0%{?rhel} || 0%{?rhel} >= 10
-%global with_nvk %{with_vulkan_hw}
 %endif
 %global base_vulkan %{?with_vulkan_hw:,amd}%{!?with_vulkan_hw:%{nil}}
 %endif
@@ -34,7 +33,7 @@ algorithms and decoding only VC1 algorithm.
 %endif
 %endif
 %ifarch x86_64
-%if !0%{?with_vulkan_hw}
+%if 0%{?with_vulkan_hw}
 %global with_intel_vk_rt 1
 %endif
 %endif
@@ -50,12 +49,11 @@ algorithms and decoding only VC1 algorithm.
 %global with_v3d       0
 %endif
 %global with_freedreno 0
-%global with_kmsro     0
 %global with_panfrost  0
 %if 0%{?with_asahi}
 %global asahi_platform_vulkan %{?with_vulkan_hw:,asahi}%{!?with_vulkan_hw:%{nil}}
 %endif
-%global extra_platform_vulkan %{?with_vulkan_hw:,broadcom,freedreno,panfrost,imagination-experimental}%{!?with_vulkan_hw:%{nil}}
+%global extra_platform_vulkan %{?with_vulkan_hw:,broadcom,freedreno,panfrost,imagination}%{!?with_vulkan_hw:%{nil}}
 %endif
 
 %if !0%{?rhel}
@@ -70,15 +68,20 @@ algorithms and decoding only VC1 algorithm.
 %bcond_with valgrind
 %endif
 
-%global vulkan_drivers swrast%{?base_vulkan}%{?intel_platform_vulkan}%{?asahi_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}%{?with_virtio:,virtio}
+%global vulkan_drivers swrast%{?base_vulkan}%{?intel_platform_vulkan}%{?asahi_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}%{?with_virtio:,virtio}%{?with_d3d12:,microsoft-experimental}
 
 %if 0%{?with_nvk} && 0%{?rhel}
 %global vendor_nvk_crates 1
 %endif
 
+# We've gotten a report that enabling LTO for mesa breaks some games. See
+# https://bugzilla.redhat.com/show_bug.cgi?id=1862771 for details.
+# Disable LTO for now
+%global _lto_cflags %nil
+
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.2.8
+%global ver 25.3.4
 Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
@@ -90,7 +93,6 @@ Source0:        https://archive.mesa3d.org/%{srcname}-%{ver}.tar.xz
 # Fedora opts to ignore the optional part of clause 2 and treat that code as 2 clause BSD.
 Source1:        Mesa-MLAA-License-Clarification-Email.txt
 Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
-Source3:        org.mesa3d.vdpau.freeworld.metainfo.xml
 
 %if 0%{?vendor_nvk_crates}
 # In CentOS/RHEL, Rust crates required to build NVK are vendored.
@@ -111,11 +113,8 @@ Source14:       https://crates.io/api/v1/crates/unicode-ident/%{rust_unicode_ide
 Source15:       https://crates.io/api/v1/crates/rustc-hash/%{rustc_hash_ver}/download#/rustc-hash-%{rustc_hash_ver}.tar.gz
 %endif
 
-Patch10:        gnome-shell-glthread-disable.patch
-
-# fix zink/device-select bug
-Patch11:        0001-device-select-add-a-layer-setting-to-disable-device-.patch
-Patch12:        0002-zink-use-device-select-layer-settings-to-disable-dev.patch
+# Teflon: https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/38532
+Patch12:        mesa-38532.patch
 
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
@@ -140,6 +139,7 @@ BuildRequires:  pkgconfig(wayland-protocols) >= 1.34
 BuildRequires:  pkgconfig(wayland-client) >= 1.11
 BuildRequires:  pkgconfig(wayland-server) >= 1.11
 BuildRequires:  pkgconfig(wayland-egl-backend) >= 3
+BuildRequires:  pkgconfig(libdisplay-info)
 BuildRequires:  pkgconfig(x11)
 BuildRequires:  pkgconfig(xext)
 BuildRequires:  pkgconfig(xdamage) >= 1.1
@@ -163,9 +163,6 @@ BuildRequires:  flex
 %if 0%{?with_lmsensors}
 BuildRequires:  lm_sensors-devel
 %endif
-%if 0%{?with_vdpau}
-BuildRequires:  pkgconfig(vdpau) >= 1.1
-%endif
 %if 0%{?with_va}
 BuildRequires:  pkgconfig(libva) >= 0.38.0
 %endif
@@ -177,7 +174,7 @@ BuildRequires:  flatbuffers-devel
 BuildRequires:  flatbuffers-compiler
 BuildRequires:  xtensor-devel
 %endif
-%if 0%{?with_opencl} || 0%{?with_nvk} || 0%{?with_intel_clc} || 0%{?with_asahi} || 0%{?with_panfrost}
+%if 0%{?with_opencl} || 0%{?with_nvk} || 0%{?with_asahi} || 0%{?with_panfrost}
 BuildRequires:  clang-devel
 BuildRequires:  pkgconfig(libclc)
 BuildRequires:  pkgconfig(SPIRV-Tools)
@@ -207,7 +204,7 @@ BuildRequires:  glslang
 BuildRequires:  pkgconfig(vulkan)
 %endif
 %if 0%{?with_d3d12}
-BuildRequires:  pkgconfig(DirectX-Headers) >= 1.614.1
+BuildRequires:  pkgconfig(DirectX-Headers) >= 1.618.1
 %endif
 
 %description
@@ -219,18 +216,9 @@ Summary:        Mesa-based VA-API drivers
 Requires:       %{srcname}-filesystem%{?_isa} = %{?epoch:%{epoch}:}%{version}
 Provides:       %{srcname}-va-drivers = %{?epoch:%{epoch}:}%{version}-%{release}
 Provides:       %{srcname}-va-drivers%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
+Obsoletes:      %{srcname}-vdpau-drivers-freeworld < %{?epoch:%{epoch}:}%{version}-%{release}
 
 %description    -n %{srcname}-va-drivers-freeworld
-%{_description}
-%endif
-
-%if 0%{?with_vdpau}
-%package        -n %{srcname}-vdpau-drivers-freeworld
-Summary:        Mesa-based VDPAU drivers
-Requires:       %{srcname}-filesystem%{?_isa} = %{?epoch:%{epoch}:}%{version}
-Conflicts:      %{srcname}-vdpau-drivers%{?_isa}
-
-%description 	-n %{srcname}-vdpau-drivers-freeworld
 %{_description}
 %endif
 
@@ -274,7 +262,7 @@ done
 cat > Cargo.toml <<_EOF
 [package]
 name = "mesa"
-version = "%{version}"
+version = "%{ver}"
 edition = "2021"
 
 [lib]
@@ -282,11 +270,10 @@ path = "src/nouveau/nil/lib.rs"
 
 # only direct dependencies need to be listed here
 [dependencies]
-paste = "$(grep ^directory subprojects/paste.wrap | sed 's|.*-||')"
-syn = { version = "$(grep ^directory subprojects/syn.wrap | sed 's|.*-||')", features = ["clone-impls"] }
-rustc-hash = "$(grep ^directory subprojects/rustc-hash.wrap | sed 's|.*-||')"
+paste = "$(grep ^directory subprojects/paste*.wrap | sed 's|.*-||')"
+syn = { version = "$(grep ^directory subprojects/syn*.wrap | sed 's|.*-||')", features = ["clone-impls"] }
+rustc-hash = "$(grep ^directory subprojects/rustc-hash*.wrap | sed 's|.*-||')"
 _EOF
-
 %if 0%{?vendor_nvk_crates}
 %cargo_prep -v subprojects/packagecache
 %else
@@ -297,6 +284,7 @@ _EOF
 %endif
 %endif
 
+
 %build
 # ensure standard Rust compiler flags are set
 export RUSTFLAGS="%build_rustflags"
@@ -306,8 +294,27 @@ export RUSTFLAGS="%build_rustflags"
 %if !0%{?vendor_nvk_crates}
 export MESON_PACKAGE_CACHE_DIR="%{cargo_registry}/"
 %endif
+
+# This function rewrites a mesa .wrap file:
+# - Removes the lines that start with "source"
+# - Replaces the "directory =" with the MESON_PACKAGE_CACHE_DIR
+#
+# Example: An upstream .wrap file like this (proc-macro2-1-rs.wrap):
+#
+# [wrap-file]
+# directory = proc-macro2-1.0.86
+# source_url = https://crates.io/api/v1/crates/proc-macro2/1.0.86/download
+# source_filename = proc-macro2-1.0.86.tar.gz
+# source_hash = 5e719e8df665df0d1c8fbfd238015744736151d4445ec0836b8e628aae103b77
+# patch_directory = proc-macro2-1-rs
+#
+# Will be transformed to:
+#
+# [wrap-file]
+# directory = meson-package-cache-dir
+# patch_directory = proc-macro2-1-rs
 rewrite_wrap_file() {
-   sed -e "/source.*/d" -e "s/${1}-.*/$(basename ${MESON_PACKAGE_CACHE_DIR:-subprojects/packagecache}/${1}-*)/" -i subprojects/${1}.wrap
+  sed -e "/source.*/d" -e "s/^directory = ${1}-.*/directory = $(basename ${MESON_PACKAGE_CACHE_DIR:-subprojects/packagecache}/${1}-*)/" -i subprojects/${1}*.wrap
 }
 
 rewrite_wrap_file proc-macro2
@@ -318,14 +325,8 @@ rewrite_wrap_file paste
 rewrite_wrap_file rustc-hash
 %endif
 
-# We've gotten a report that enabling LTO for mesa breaks some games. See
-# https://bugzilla.redhat.com/show_bug.cgi?id=1862771 for details.
-# Disable LTO for now
-%define _lto_cflags %{nil}
-
 %meson \
   --libdir=%{_libdir}/dri-freeworld \
-  -Dvdpau-libs-path=%{_libdir}/vdpau \
   -Ddri-drivers-path=%{_libdir}/dri-freeworld \
   -Dva-libs-path=%{_libdir}/dri-freeworld \
   -Dplatforms=x11,wayland \
@@ -334,7 +335,6 @@ rewrite_wrap_file rustc-hash
 %else
   -Dgallium-drivers=llvmpipe,virgl \
 %endif
-  -Dgallium-vdpau=%{?with_vdpau:enabled}%{!?with_vdpau:disabled} \
   -Dgallium-va=%{?with_va:enabled}%{!?with_va:disabled} \
   -Dgallium-mediafoundation=disabled \
   -Dteflon=false \
@@ -368,6 +368,7 @@ rewrite_wrap_file rustc-hash
 %ifarch %{ix86}
   -Dglx-read-only-text=true \
 %endif
+  -Dspirv-tools=%{?with_spirv_tools:enabled}%{!?with_spirv_tools:disabled} \
   %{nil}
 %meson_build
 
@@ -385,11 +386,8 @@ rewrite_wrap_file rustc-hash
 # install Appdata files
 mkdir -p %{buildroot}%{_metainfodir}
 install -pm 0644 %{SOURCE2} %{buildroot}%{_metainfodir}
-install -pm 0644 %{SOURCE3} %{buildroot}%{_metainfodir}
 
-# libvdpau opens the versioned name, don't bother including the unversioned
-rm -vf %{buildroot}%{_libdir}/vdpau/*.so
-# likewise glvnd
+# glvnd opens the versioned name, don't bother including the unversioned
 rm -vf %{buildroot}%{_libdir}/libGLX_mesa.so
 rm -vf %{buildroot}%{_libdir}/libEGL_mesa.so
 # XXX can we just not build this
@@ -412,7 +410,7 @@ for i in libGL.so ; do
 done
 popd
 
-# strip unneeded files from va-api and vdpau
+# strip unneeded files from va-api
 rm -rf %{buildroot}%{_datadir}/{drirc.d/00-mesa-defaults.conf,glvnd}
 rm -rf %{buildroot}%{_libdir}{,/dri-freeworld}/{d3d,EGL,gallium-pipe,libGLX,pkgconfig}
 rm -rf %{buildroot}%{_includedir}/{d3dadapter,EGL,GL,KHR}
@@ -431,6 +429,8 @@ rm -fr %{buildroot}%{_libdir}/dri/*_dri.so
 rm -fr %{buildroot}%{_includedir}/GLES*
 rm -fr %{buildroot}%{_libdir}/dri-freeworld/libGLES*
 rm -fr %{buildroot}%{_prefix}/lib%{_libdir}/dri-freeworld/libGLES*
+rm -fr %{buildroot}%{_bindir}/spirv2dxil
+rm -fr %{buildroot}%{_libdir}/dri-freeworld/libspirv_to_dxil.*
 
 # ld.so.conf.d file
 install -m 0755 -d  %{buildroot}%{_sysconfdir}/ld.so.conf.d/
@@ -457,23 +457,6 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %license docs/license.rst
 %endif
 
-%if 0%{?with_vdpau}
-%files -n %{srcname}-vdpau-drivers-freeworld
-%{_libdir}/vdpau/libvdpau_nouveau.so.1*
-%if 0%{?with_r600}
-%{_libdir}/vdpau/libvdpau_r600.so.1*
-%endif
-%if 0%{?with_radeonsi}
-%{_libdir}/vdpau/libvdpau_radeonsi.so.1*
-%endif
-%if 0%{?with_d3d12}
-%{_libdir}/vdpau/libvdpau_d3d12.so.1*
-%endif
-%{_libdir}/vdpau/libvdpau_virtio_gpu.so.1*
-%{_metainfodir}/org.mesa3d.vdpau.freeworld.metainfo.xml
-%license docs/license.rst
-%endif
-
 %files -n %{srcname}-vulkan-drivers-freeworld
 %if 0%{?with_nvk}
 %license LICENSE.dependencies
@@ -497,6 +480,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %{_libdir}/dri-freeworld/libvulkan_nouveau.so
 %{_datadir}/vulkan/icd.d/nouveau_icd.*.json
 %endif
+%if 0%{?with_d3d12}
+%{_libdir}/dri-freeworld/libvulkan_dzn.so
+%{_datadir}/vulkan/icd.d/dzn_icd.*.json
+%endif
 %ifarch %{ix86} x86_64
 %{_libdir}/dri-freeworld/libvulkan_intel.so
 %{_datadir}/vulkan/icd.d/intel_icd.*.json
@@ -514,28 +501,34 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %{_datadir}/vulkan/icd.d/freedreno_icd.*.json
 %{_libdir}/dri-freeworld/libvulkan_panfrost.so
 %{_datadir}/vulkan/icd.d/panfrost_icd.*.json
-%{_libdir}/dri-freeworld/libpowervr_rogue.so
 %{_libdir}/dri-freeworld/libvulkan_powervr_mesa.so
 %{_datadir}/vulkan/icd.d/powervr_mesa_icd.*.json
 %endif
 %endif
 
 %changelog
-* Tue Jan 27 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.8-1
-- Update to 25.2.8
+* Tue Jan 27 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.4-3
+- Update to 25.3.4
+- sync various bits with recent Fedora changes
 
-* Mon Nov 24 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.7-2
-- Update 0001-device-select-add-a-layer-setting-to-disable-device-.patch
+* Wed Jan 07 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.3-3
+- Update to 25.3.3
 
-* Mon Nov 17 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.7-1
-- Update to 25.2.7
-- add patches Fedora started applying
+* Fri Dec 05 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.1-1
+- Update to 25.3.1
+- Fix DirectX-Headers minimal required version for 25.3.0
 
-* Wed Nov 5 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.6-1
-- Update to 25.2.6
+* Fri Nov 28 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.0-2
+- Update vulkan device select layer patches
+- Disable LTO globally
 
-* Sat Oct 18 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.5-2
-- Reenable VDPAU support for f43
+* Mon Nov 17 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.0-1
+- Update to 25.3.0
+- sync various bits with recent Fedora changes
+
+* Fri Nov 7 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.6-1
+- Update to 25.2.5
+- sync various bits with recent Fedora changes
 
 * Thu Oct 16 2025 Thorsten Leemhuis <fedora@leemhuis.info> - 25.2.5-1
 - Update to 25.2.5
