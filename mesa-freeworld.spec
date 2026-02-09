@@ -83,7 +83,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-Version:        25.3.5
+Version:        26.0.0~rc3
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
@@ -118,6 +118,9 @@ Source13:       https://crates.io/api/v1/crates/syn/%{rust_syn_ver}/download#/sy
 Source14:       https://crates.io/api/v1/crates/unicode-ident/%{rust_unicode_ident_ver}/download#/unicode-ident-%{rust_unicode_ident_ver}.tar.gz
 Source15:       https://crates.io/api/v1/crates/rustc-hash/%{rustc_hash_ver}/download#/rustc-hash-%{rustc_hash_ver}.tar.gz
 %endif
+
+Patch01:        0001-winsys-amdgpu-Fix-userq-job-info-log-on-PPC.patch
+Patch02:        0002-venus-Fix-error-log-on-PPC.patch
 
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
@@ -504,6 +507,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Mon Feb 09 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.0~rc3-1
+- Update to 26.0.0~rc3
+
 * Mon Feb 09 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.5-1
 - Update to 25.3.5
 - sync various bits with recent Fedora changes

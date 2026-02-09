@@ -1,0 +1,58 @@
+From f787d8b884a5224221e7ff1755442f9af3e9550a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Jos=C3=A9=20Exp=C3=B3sito?= <jose.exposito89@gmail.com>
+Date: Mon, 9 Feb 2026 09:39:57 +0100
+Subject: [PATCH] winsys/amdgpu: Fix userq job info log on PPC
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+On the ppc64le architecture the macro printing the userq job info fails
+to compile with error:
+
+   In file included from ../src/gallium/winsys/amdgpu/drm/amdgpu_cs.cpp:11:
+   ../src/gallium/winsys/amdgpu/drm/amdgpu_cs.cpp: In function ‘int amdgpu_cs_submit_ib_userq(amdgpu_userq*, amdgpu_cs*, uint32_t*, unsigned int, uint32_t*, unsigned int, uint64_t*, uint64_t)’:
+   ../src/gallium/winsys/amdgpu/drm/amdgpu_cs.cpp:1652:20: error: format ‘%llx’ expects argument of type ‘long long unsigned int’, but argument 6 has type ‘__u64’ {aka ‘long unsigned int’} [-Werror=format=]
+   1652 |          mesa_logi("amdgpu: uq_log: %s:  num_wait_fences=%d  uq_va=%llx  job=%llx\n",
+   1653 |                    amdgpu_userq_str[acs->queue_index], userq_wait_data.num_fences, fence_info[i].va,
+         |                                                                                    ~~~~~~~~~~~~~~~~
+         |                                                                                                  |
+         |                                                                                                  __u64 {aka long unsigned int}
+   ../src/util/log.h:78:70: note: in definition of macro ‘mesa_logi’
+      78 | #define mesa_logi(fmt, ...) mesa_log(MESA_LOG_INFO, (MESA_LOG_TAG), (fmt), ##__VA_ARGS__)
+         |                                                                      ^~~
+   ../src/gallium/winsys/amdgpu/drm/amdgpu_cs.cpp:1652:20: error: format ‘%llx’ expects argument of type ‘long long unsigned int’, but argument 7 has type ‘__u64’ {aka ‘long unsigned int’} [-Werror=format=]
+   1652 |          mesa_logi("amdgpu: uq_log: %s:  num_wait_fences=%d  uq_va=%llx  job=%llx\n",
+   1653 |                    amdgpu_userq_str[acs->queue_index], userq_wait_data.num_fences, fence_info[i].va,
+   1654 |                    fence_info[i].value);
+         |                    ~~~~~~~~~~~~~~~~~~~
+         |                                  |
+         |                                  __u64 {aka long unsigned int}
+   ../src/util/log.h:78:70: note: in definition of macro ‘mesa_logi’
+      78 | #define mesa_logi(fmt, ...) mesa_log(MESA_LOG_INFO, (MESA_LOG_TAG), (fmt), ##__VA_ARGS__)
+         |                                                                      ^~~
+
+Parse the parameters to fix the failure.
+
+Fixes: 2547fd0f59d6 ("winsys/amdgpu: print userq job info")
+---
+ src/gallium/winsys/amdgpu/drm/amdgpu_cs.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/gallium/winsys/amdgpu/drm/amdgpu_cs.cpp b/src/gallium/winsys/amdgpu/drm/amdgpu_cs.cpp
+index 12aa8b12071..678f15bc2b0 100644
+--- a/src/gallium/winsys/amdgpu/drm/amdgpu_cs.cpp
++++ b/src/gallium/winsys/amdgpu/drm/amdgpu_cs.cpp
+@@ -1650,8 +1650,8 @@ static int amdgpu_cs_submit_ib_userq(struct amdgpu_userq *userq,
+           * given queue, cross process/queue fence dependency can be analyzed.
+           */
+          mesa_logi("amdgpu: uq_log: %s:  num_wait_fences=%d  uq_va=%llx  job=%llx\n",
+-                   amdgpu_userq_str[acs->queue_index], userq_wait_data.num_fences, fence_info[i].va,
+-                   fence_info[i].value);
++                   amdgpu_userq_str[acs->queue_index], userq_wait_data.num_fences,
++                   (long long)fence_info[i].va, (long long)fence_info[i].value);
+       }
+    }
+ 
+-- 
+2.53.0
+
