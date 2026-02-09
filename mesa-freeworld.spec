@@ -4,16 +4,18 @@ algorithms and decoding only VC1 algorithm.
 %ifnarch s390x
 %global with_hardware 1
 %global with_kmsro 0
-%global with_nvk 1
 %global with_radeonsi 1
 %global with_spirv_tools 1
 %global with_vmware 1
 %global with_vulkan_hw 1
-%global with_va 1
 %if !0%{?rhel}
 %global with_r300 1
 %global with_r600 1
 %global with_opencl 0
+%global with_va 1
+%endif
+%if !0%{?rhel} || 0%{?rhel} >= 9
+%global with_nvk %{with_vulkan_hw}
 %endif
 %global base_vulkan %{?with_vulkan_hw:,amd}%{!?with_vulkan_hw:%{nil}}
 %endif
@@ -81,11 +83,15 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-%global ver 25.3.4
-Version:        %{lua:ver = string.gsub(rpm.expand("%{ver}"), "-", "~"); print(ver)}
+Version:        25.3.5
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            http://www.mesa3d.org
+
+# The "Version" field for release candidates has the format: A.B.C~rcX
+# However, the tarball has the format: A.B.C-rcX.
+# The "ver" variable contains the version in the second format.
+%global ver %{gsub %version ~ -}
 
 Source0:        https://archive.mesa3d.org/%{srcname}-%{ver}.tar.xz
 # src/gallium/auxiliary/postprocess/pp_mlaa* have an ... interestingly worded license.
@@ -112,9 +118,6 @@ Source13:       https://crates.io/api/v1/crates/syn/%{rust_syn_ver}/download#/sy
 Source14:       https://crates.io/api/v1/crates/unicode-ident/%{rust_unicode_ident_ver}/download#/unicode-ident-%{rust_unicode_ident_ver}.tar.gz
 Source15:       https://crates.io/api/v1/crates/rustc-hash/%{rustc_hash_ver}/download#/rustc-hash-%{rustc_hash_ver}.tar.gz
 %endif
-
-# Teflon: https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/38532
-Patch12:        mesa-38532.patch
 
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
@@ -229,6 +232,7 @@ Requires:       %{srcname}-filesystem%{?_isa} = %{?epoch:%{epoch}:}%{version}
 Provides:       %{srcname}-vulkan-drivers = %{?epoch:%{epoch}:}%{version}
 Provides:       %{srcname}-vulkan-drivers%{?_isa} = %{?epoch:%{epoch}:}%{version}
 Obsoletes:      mesa-vulkan-devel < %{?epoch:%{epoch}:}%{version}-%{release}
+Obsoletes:      VK_hdr_layer < 1
 # the following conflict is needed until we can find a way to install freeworld
 # drivers in parallel to Fedora's; for ideas how to realize this see:
 # * https://github.com/KhronosGroup/Vulkan-Loader/issues/1647 and its backstory: 
@@ -403,13 +407,6 @@ rm -vf %{buildroot}%{_libdir}/dri/apple_dri.so
 # determine the vendor
 ln -s %{_libdir}/libGLX_mesa.so.0 %{buildroot}%{_libdir}/libGLX_system.so.0
 
-# this keeps breaking, check it early.  note that the exit from eu-ftr is odd.
-pushd %{buildroot}%{_libdir}
-for i in libGL.so ; do
-    eu-findtextrel $i && exit 1
-done
-popd
-
 # strip unneeded files from va-api
 rm -rf %{buildroot}%{_datadir}/{drirc.d/00-mesa-defaults.conf,glvnd}
 rm -rf %{buildroot}%{_libdir}{,/dri-freeworld}/{d3d,EGL,gallium-pipe,libGLX,pkgconfig}
@@ -507,6 +504,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Mon Feb 09 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.5-1
+- Update to 25.3.5
+- sync various bits with recent Fedora changes
+
 * Tue Jan 27 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.4-3
 - Update to 25.3.4
 - sync various bits with recent Fedora changes
