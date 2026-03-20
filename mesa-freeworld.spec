@@ -20,7 +20,7 @@ algorithms and decoding only VC1 algorithm.
 %global base_vulkan %{?with_vulkan_hw:,amd}%{!?with_vulkan_hw:%{nil}}
 %endif
 
-%ifarch aarch64 x86_64
+%ifnarch %{ix86}
 %if !0%{?rhel}
 %global with_teflon 0
 %endif
@@ -83,8 +83,8 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-Version:        25.3.6
-Release:        2%{?dist}
+Version:        26.0.3
+Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            https://mesa3d.org
 
@@ -505,16 +505,29 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
-* Thu Mar 05 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.6-2
-- Rebuild for new llvm
+* Thu Mar 19 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.3-1
+- Update to 26.0.3
 
-* Mon Feb 23 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.6-1
-- Update to 25.3.6
+* Fri Mar 13 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.2-1
+- Update to 26.0.2
 
-* Thu Feb 12 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.5-2
+* Thu Mar 05 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.1-2
+- Rebuild for new llmv
+
+* Thu Feb 26 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.1-1
+- Update to 26.0.1
+
+* Mon Feb 23 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.0-2
 - rebuild for libdisplay-info 0.3.0
 
-* Thu Feb 12 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.5-1
+* Thu Feb 12 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.0-1
+- Update to 26.0.0
+- sync various bits with recent Fedora changes
+
+* Mon Feb 09 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.0~rc3-1
+- Update to 26.0.0~rc3
+
+* Mon Feb 09 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 25.3.5-1
 - Update to 25.3.5
 - sync various bits with recent Fedora changes
 
