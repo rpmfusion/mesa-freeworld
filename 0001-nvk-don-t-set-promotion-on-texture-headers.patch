@@ -1,0 +1,59 @@
+From da908849393c83ac1abd7968efeb23df8bd52075 Mon Sep 17 00:00:00 2001
+From: Dave Airlie <airlied@redhat.com>
+Date: Tue, 14 Apr 2026 16:30:45 +1000
+Subject: [PATCH] nvk: don't set promotion on texture headers
+
+This appears to cause some sort of prefetching which is causing
+page faults for linear textures on the following page after the
+texture allocation.
+
+This might be okay for tiled, but for now just disable it.
+
+Cc: mesa-stable
+---
+ src/nouveau/nil/descriptor.rs | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/nouveau/nil/descriptor.rs b/src/nouveau/nil/descriptor.rs
+index 0bcb54c7df4..4b6aa660ef1 100644
+--- a/src/nouveau/nil/descriptor.rs
++++ b/src/nouveau/nil/descriptor.rs
+@@ -521,7 +521,7 @@ fn nvb097_fill_image_view_desc(
+ 
+     th.set_field(clb097::TEXHEAD_BL_S_R_G_B_CONVERSION, view.format.is_srgb());
+ 
+-    set_enum!(th, clb097, TEXHEAD_BL_SECTOR_PROMOTION, PROMOTE_TO_2_V);
++    set_enum!(th, clb097, TEXHEAD_BL_SECTOR_PROMOTION, NO_PROMOTION);
+     set_enum!(th, clb097, TEXHEAD_BL_BORDER_SIZE, BORDER_SAMPLER_COLOR);
+ 
+     // In the sampler, the two options for FLOAT_COORD_NORMALIZATION are:
+@@ -703,7 +703,7 @@ fn nvcb97_fill_image_view_desc(
+         view.format.is_srgb(),
+     );
+ 
+-    set_enum!(th, clcb97, TEXHEAD_V2_BL_SECTOR_PROMOTION, PROMOTE_TO_2_V);
++    set_enum!(th, clcb97, TEXHEAD_V2_BL_SECTOR_PROMOTION, NO_PROMOTION);
+     set_enum!(th, clcb97, TEXHEAD_V2_BL_BORDER_SOURCE, BORDER_COLOR);
+ 
+     // In the sampler, the two options for FLOAT_COORD_NORMALIZATION are:
+@@ -802,7 +802,7 @@ fn nvb097_nil_fill_buffer_desc(
+     set_enum!(th, clb097, TEXHEAD_1D_TEXTURE_TYPE, ONE_D_BUFFER);
+ 
+     // TODO: Do we need this?
+-    set_enum!(th, clb097, TEXHEAD_1D_SECTOR_PROMOTION, PROMOTE_TO_2_V);
++    set_enum!(th, clb097, TEXHEAD_1D_SECTOR_PROMOTION, NO_PROMOTION);
+ }
+ 
+ fn nvcb97_nil_fill_buffer_desc(
+@@ -833,7 +833,7 @@ fn nvcb97_nil_fill_buffer_desc(
+     th.set_field(clcb97::TEXHEAD_V2_1DRT_WIDTH_MINUS_ONE, num_elements - 1);
+ 
+     // TODO: Do we need this?
+-    set_enum!(th, clcb97, TEXHEAD_1D_SECTOR_PROMOTION, PROMOTE_TO_2_V);
++    set_enum!(th, clcb97, TEXHEAD_1D_SECTOR_PROMOTION, NO_PROMOTION);
+ }
+ 
+ pub const ZERO_SWIZZLE: [nil_rs_bindings::pipe_swizzle; 4] = [
+-- 
+2.53.0
+
