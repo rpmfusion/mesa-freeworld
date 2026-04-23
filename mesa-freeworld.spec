@@ -422,7 +422,7 @@ rm -fr %{buildroot}%{_includedir}/gbm.h %{buildroot}%{_includedir}/gbm_backend_a
 rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libxatracker.so*
 rm -fr %{buildroot}%{_includedir}/xa_*.h
 rm -fr %{buildroot}%{_libdir}/libMesaOpenCL.so*
-rm -fr %{buildroot}%{_libdir}/dri/*_dri.so
+rm -fr %{buildroot}%{_libdir}/dri-freeworld/*_dri.so
 rm -fr %{buildroot}%{_includedir}/GLES*
 rm -fr %{buildroot}%{_libdir}/dri-freeworld/libGLES*
 rm -fr %{buildroot}%{_prefix}/lib%{_libdir}/dri-freeworld/libGLES*
