@@ -152,7 +152,7 @@ BuildRequires:  pkgconfig(xxf86vm)
 BuildRequires:  pkgconfig(xcb)
 BuildRequires:  pkgconfig(x11-xcb)
 BuildRequires:  pkgconfig(xcb-dri2) >= 1.8
-BuildRequires:  pkgconfig(xcb-dri3)🤔
+BuildRequires:  pkgconfig(xcb-dri3)
 BuildRequires:  pkgconfig(xcb-present)
 BuildRequires:  pkgconfig(xcb-sync)
 BuildRequires:  pkgconfig(xshmfence) >= 1.1
@@ -192,7 +192,7 @@ BuildRequires:  cargo-rpm-macros
 %endif
 %endif
 %if 0%{?with_nvk}
-BuildRequires:  cbindgen🤔
+BuildRequires:  cbindgen
 %endif
 %if %{with valgrind}
 BuildRequires:  pkgconfig(valgrind)
