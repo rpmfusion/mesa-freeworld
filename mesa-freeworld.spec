@@ -83,7 +83,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-Version:        26.1.0~rc3
+Version:        26.1.0
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            https://mesa3d.org
@@ -191,6 +191,9 @@ BuildRequires:  rust-toolset
 BuildRequires:  cargo-rpm-macros
 %endif
 %endif
+%if 0%{?with_opencl}
+BuildRequires:  libstdc++-static
+%endif
 %if 0%{?with_nvk}
 BuildRequires:  cbindgen
 %endif
@@ -207,7 +210,7 @@ BuildRequires:  glslang
 BuildRequires:  pkgconfig(vulkan)
 %endif
 %if 0%{?with_d3d12}
-BuildRequires:  pkgconfig(DirectX-Headers) >= 1.618.1
+BuildRequires:  pkgconfig(DirectX-Headers) >= 1.619.1
 %endif
 
 %description
@@ -504,6 +507,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Thu May 07 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.0-1
+- Update to 26.1.0
+
 * Thu Apr 30 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.0~rc3-1
 - Update to 26.1.0~rc3
 
