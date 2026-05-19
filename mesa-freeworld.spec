@@ -83,7 +83,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-Version:        26.0.6
+Version:        26.0.7
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            https://mesa3d.org
@@ -122,6 +122,7 @@ Source15:       https://crates.io/api/v1/crates/rustc-hash/%{rustc_hash_ver}/dow
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
+BuildRequires:  libstdc++-static
 BuildRequires:  gettext
 %if 0%{?with_hardware}
 BuildRequires:  kernel-headers
@@ -504,6 +505,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Tue May 19 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.7-1
+- Update to 26.0.7
+
 * Thu Apr 30 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.6-1
 - Update to 26.0.6
 - Drop the two most recently added patches
