@@ -83,7 +83,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-Version:        26.0.8
+Version:        26.1.3
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            https://mesa3d.org
@@ -122,7 +122,6 @@ Source15:       https://crates.io/api/v1/crates/rustc-hash/%{rustc_hash_ver}/dow
 BuildRequires:  meson >= 1.3.0
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
-BuildRequires:  libstdc++-static
 BuildRequires:  gettext
 %if 0%{?with_hardware}
 BuildRequires:  kernel-headers
@@ -192,6 +191,9 @@ BuildRequires:  rust-toolset
 BuildRequires:  cargo-rpm-macros
 %endif
 %endif
+%if 0%{?with_opencl}
+BuildRequires:  libstdc++-static
+%endif
 %if 0%{?with_nvk}
 BuildRequires:  cbindgen
 %endif
@@ -208,7 +210,7 @@ BuildRequires:  glslang
 BuildRequires:  pkgconfig(vulkan)
 %endif
 %if 0%{?with_d3d12}
-BuildRequires:  pkgconfig(DirectX-Headers) >= 1.618.1
+BuildRequires:  pkgconfig(DirectX-Headers) >= 1.619.1
 %endif
 
 %description
@@ -423,7 +425,7 @@ rm -fr %{buildroot}%{_includedir}/gbm.h %{buildroot}%{_includedir}/gbm_backend_a
 rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libxatracker.so*
 rm -fr %{buildroot}%{_includedir}/xa_*.h
 rm -fr %{buildroot}%{_libdir}/libMesaOpenCL.so*
-rm -fr %{buildroot}%{_libdir}/dri/*_dri.so
+rm -fr %{buildroot}%{_libdir}/dri-freeworld/*_dri.so
 rm -fr %{buildroot}%{_includedir}/GLES*
 rm -fr %{buildroot}%{_libdir}/dri-freeworld/libGLES*
 rm -fr %{buildroot}%{_prefix}/lib%{_libdir}/dri-freeworld/libGLES*
@@ -505,18 +507,23 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
-* Thu May 28 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.8-1
-- Update to 26.0.8
+* Thu Jun 18 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.3-1
+- Update to 26.1.3
 
-* Tue May 19 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.7-1
-- Update to 26.0.7
+* Wed Jun 3 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.2-1
+- Update to 26.1.2
 
-* Thu Apr 30 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.6-1
-- Update to 26.0.6
-- Drop the two most recently added patches
+* Thu May 21 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.1-1
+- Update to 26.1.1
 
-* Fri Apr 24 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.5-2
-- Add 0002-nir-gather_info-clear-interpolation-qualifiers-only-.patch
+* Thu May 07 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.0-1
+- Update to 26.1.0
+
+* Thu Apr 30 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.0~rc3-1
+- Update to 26.1.0~rc3
+
+* Thu Apr 23 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.0~rc2-1
+- Update to 26.1.0~rc2
 
 * Thu Apr 16 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.0.5-1
 - Update to 26.0.5
