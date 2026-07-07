@@ -403,6 +403,8 @@ rm -vf %{buildroot}%{_libdir}/libGLES*
 # make lib path explicit, needed on ix86: https://bugzilla.rpmfusion.org/show_bug.cgi?id=7501
 sed -i 's!: "libVkLayer_MESA_device_select.so"!: "'"%{_libdir}"'/dri-freeworld/libVkLayer_MESA_device_select.so"!' \
   %{buildroot}%{_datadir}/vulkan/implicit_layer.d/VkLayer_MESA_device_select.json
+grep "%{_libdir}/dri-freeworld/libVkLayer_MESA_device_select.so" \
+  %{buildroot}%{_datadir}/vulkan/implicit_layer.d/VkLayer_MESA_device_select.json > /dev/null
 
 %if ! 0%{?with_asahi}
 # This symlink is unconditionally created when any kmsro driver is enabled
