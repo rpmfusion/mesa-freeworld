@@ -84,7 +84,7 @@ algorithms and decoding only VC1 algorithm.
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 Version:        26.1.5
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            https://mesa3d.org
 
@@ -400,12 +400,6 @@ rm -vf %{buildroot}%{_libdir}/libEGL_mesa.so
 # XXX can we just not build this
 rm -vf %{buildroot}%{_libdir}/libGLES*
 
-# make lib path explicit, needed on ix86: https://bugzilla.rpmfusion.org/show_bug.cgi?id=7501
-sed -i 's!: "libVkLayer_MESA_device_select.so"!: "'"%{_libdir}"'/dri-freeworld/libVkLayer_MESA_device_select.so"!' \
-  %{buildroot}%{_datadir}/vulkan/implicit_layer.d/VkLayer_MESA_device_select.json
-grep "%{_libdir}/dri-freeworld/libVkLayer_MESA_device_select.so" \
-  %{buildroot}%{_datadir}/vulkan/implicit_layer.d/VkLayer_MESA_device_select.json > /dev/null
-
 %if ! 0%{?with_asahi}
 # This symlink is unconditionally created when any kmsro driver is enabled
 # We don't want this one so delete it
@@ -513,6 +507,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Sun Jul 19 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.5-2
+- revert hardcode lib path in VkLayer_MESA_device_select.json to resolve zink on
+  ix86 issues: https://bugzilla.rpmfusion.org/show_bug.cgi?id=7513
+
 * Thu Jul 16 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.5-1
 - Update to 26.1.5
 
