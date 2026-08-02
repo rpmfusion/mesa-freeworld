@@ -84,7 +84,7 @@ algorithms and decoding only VC1 algorithm.
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 Version:        26.1.5
-Release:        2%{?dist}
+Release:        3%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            https://mesa3d.org
 
@@ -507,6 +507,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Sun Aug 02 2026 RPM Fusion Release Engineering <leigh123linux@rpmfusion.org> - 26.1.5-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_45_Mass_Rebuild
+
 * Sun Jul 19 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.5-2
 - revert hardcode lib path in VkLayer_MESA_device_select.json to resolve zink on
   ix86 issues: https://bugzilla.rpmfusion.org/show_bug.cgi?id=7513
