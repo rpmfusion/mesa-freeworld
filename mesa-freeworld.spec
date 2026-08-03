@@ -83,8 +83,8 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-Version:        26.1.5
-Release:        2%{?dist}
+Version:        26.1.6
+Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            https://mesa3d.org
 
@@ -138,7 +138,7 @@ BuildRequires:  pkgconfig(expat)
 BuildRequires:  pkgconfig(zlib) >= 1.2.3
 BuildRequires:  pkgconfig(libzstd)
 BuildRequires:  pkgconfig(wayland-scanner)
-BuildRequires:  pkgconfig(wayland-protocols) >= 1.34
+BuildRequires:  pkgconfig(wayland-protocols) >= 1.41
 BuildRequires:  pkgconfig(wayland-client) >= 1.11
 BuildRequires:  pkgconfig(wayland-server) >= 1.11
 BuildRequires:  pkgconfig(wayland-egl-backend) >= 3
@@ -457,7 +457,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %license docs/license.rst
 %endif
 
+%post -n %{srcname}-vulkan-drivers-freeworld -p /sbin/ldconfig
+%postun -n %{srcname}-vulkan-drivers-freeworld -p /sbin/ldconfig
 %files -n %{srcname}-vulkan-drivers-freeworld
+%config %{_sysconfdir}/ld.so.conf.d/%{name}-%{_lib}.conf
 %if 0%{?with_nvk}
 %license LICENSE.dependencies
 %if 0%{?vendor_nvk_crates}
@@ -507,6 +510,13 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Mon Aug 03 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.6-1
+- Update to 26.1.6
+- Run ldconfig on when installing vulkan-drivers-freeworld subpgk (from leigh123linux)
+
+* Sun Aug 02 2026 RPM Fusion Release Engineering <leigh123linux@rpmfusion.org> - 26.1.5-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_45_Mass_Rebuild
+
 * Sun Jul 19 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.5-2
 - revert hardcode lib path in VkLayer_MESA_device_select.json to resolve zink on
   ix86 issues: https://bugzilla.rpmfusion.org/show_bug.cgi?id=7513
