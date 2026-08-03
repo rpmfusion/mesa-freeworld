@@ -457,7 +457,10 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %license docs/license.rst
 %endif
 
+%post -n %{srcname}-vulkan-drivers-freeworld -p /sbin/ldconfig
+%postun -n %{srcname}-vulkan-drivers-freeworld -p /sbin/ldconfig
 %files -n %{srcname}-vulkan-drivers-freeworld
+%config %{_sysconfdir}/ld.so.conf.d/%{name}-%{_lib}.conf
 %if 0%{?with_nvk}
 %license LICENSE.dependencies
 %if 0%{?vendor_nvk_crates}
