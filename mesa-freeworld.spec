@@ -83,7 +83,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-Version:        26.1.6
+Version:        26.2.0
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            https://mesa3d.org
@@ -106,10 +106,10 @@ Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 # https://gitlab.freedesktop.org/mesa/mesa/-/tree/main/subprojects
 # but we generally want the latest compatible versions
 %global rust_paste_ver 1.0.15
-%global rust_proc_macro2_ver 1.0.101
-%global rust_quote_ver 1.0.40
-%global rust_syn_ver 2.0.106
-%global rust_unicode_ident_ver 1.0.18
+%global rust_proc_macro2_ver 1.0.106
+%global rust_quote_ver 1.0.44
+%global rust_syn_ver 2.0.115
+%global rust_unicode_ident_ver 1.0.23
 %global rustc_hash_ver 2.1.1
 Source10:       https://crates.io/api/v1/crates/paste/%{rust_paste_ver}/download#/paste-%{rust_paste_ver}.tar.gz
 Source11:       https://crates.io/api/v1/crates/proc-macro2/%{rust_proc_macro2_ver}/download#/proc-macro2-%{rust_proc_macro2_ver}.tar.gz
@@ -130,7 +130,7 @@ BuildRequires:  systemd-devel
 # We only check for the minimum version of pkgconfig(libdrm) needed so that the
 # SRPMs for each arch still have the same build dependencies. See:
 # https://bugzilla.redhat.com/show_bug.cgi?id=1859515
-BuildRequires:  pkgconfig(libdrm) >= 2.4.122
+BuildRequires:  pkgconfig(libdrm) >= 2.4.133
 %if 0%{?with_libunwind}
 BuildRequires:  pkgconfig(libunwind)
 %endif
@@ -426,6 +426,7 @@ rm -fr %{buildroot}%{_libdir}{,/dri-freeworld}/libxatracker.so*
 rm -fr %{buildroot}%{_includedir}/xa_*.h
 rm -fr %{buildroot}%{_libdir}/libMesaOpenCL.so*
 rm -fr %{buildroot}%{_libdir}/dri-freeworld/*_dri.so
+rm -fr %{buildroot}%{_datadir}/drirc.d/00-{asahi,crocus,d3d12,iris,msm,panfrost,r300,r600,radeonsi,v3d,virtio_gpu,vmwgfx,zink}-defaults.conf
 rm -fr %{buildroot}%{_includedir}/GLES*
 rm -fr %{buildroot}%{_libdir}/dri-freeworld/libGLES*
 rm -fr %{buildroot}%{_prefix}/lib%{_libdir}/dri-freeworld/libGLES*
@@ -469,11 +470,13 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 %{_libdir}/dri-freeworld/libvulkan_lvp.so
 %{_datadir}/vulkan/icd.d/lvp_icd.*.json
+%{_datadir}/drirc.d/00-lavapipe-defaults.conf
 %{_libdir}/dri-freeworld/libVkLayer_MESA_device_select.so
 %{_datadir}/vulkan/implicit_layer.d/VkLayer_MESA_device_select.json
 %if 0%{?with_virtio}
 %{_libdir}/dri-freeworld/libvulkan_virtio.so
 %{_datadir}/vulkan/icd.d/virtio_icd.*.json
+%{_datadir}/drirc.d/00-venus-defaults.conf
 %endif
 %if 0%{?with_vulkan_hw}
 %{_libdir}/dri-freeworld/libvulkan_radeon.so
@@ -482,34 +485,46 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %if 0%{?with_nvk}
 %{_libdir}/dri-freeworld/libvulkan_nouveau.so
 %{_datadir}/vulkan/icd.d/nouveau_icd.*.json
+%{_datadir}/drirc.d/00-nvk-defaults.conf
 %endif
 %if 0%{?with_d3d12}
 %{_libdir}/dri-freeworld/libvulkan_dzn.so
 %{_datadir}/vulkan/icd.d/dzn_icd.*.json
+%{_datadir}/drirc.d/00-dzn-defaults.conf
 %endif
 %ifarch %{ix86} x86_64
 %{_libdir}/dri-freeworld/libvulkan_intel.so
 %{_datadir}/vulkan/icd.d/intel_icd.*.json
+%{_datadir}/drirc.d/00-anv-defaults.conf
 %{_libdir}/dri-freeworld/libvulkan_intel_hasvk.so
 %{_datadir}/vulkan/icd.d/intel_hasvk_icd.*.json
+%{_datadir}/drirc.d/00-hasvk-defaults.conf
 %endif
 %ifarch aarch64 x86_64 %{ix86}
 %if 0%{?with_asahi}
 %{_libdir}/dri-freeworld/libvulkan_asahi.so
 %{_datadir}/vulkan/icd.d/asahi_icd.*.json
+%{_datadir}/drirc.d/00-hk-defaults.conf
 %endif
 %{_libdir}/dri-freeworld/libvulkan_broadcom.so
 %{_datadir}/vulkan/icd.d/broadcom_icd.*.json
+%{_datadir}/drirc.d/00-v3dv-defaults.conf
 %{_libdir}/dri-freeworld/libvulkan_freedreno.so
 %{_datadir}/vulkan/icd.d/freedreno_icd.*.json
+%{_datadir}/drirc.d/00-turnip-defaults.conf
 %{_libdir}/dri-freeworld/libvulkan_panfrost.so
 %{_datadir}/vulkan/icd.d/panfrost_icd.*.json
+%{_datadir}/drirc.d/00-panvk-defaults.conf
 %{_libdir}/dri-freeworld/libvulkan_powervr_mesa.so
 %{_datadir}/vulkan/icd.d/powervr_mesa_icd.*.json
+%{_datadir}/drirc.d/00-pvr-defaults.conf
 %endif
 %endif
 
 %changelog
+* Fri Aug 07 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.2.0-1
+- Update to 26.2.0
+
 * Mon Aug 03 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.1.6-1
 - Update to 26.1.6
 - Run ldconfig on when installing vulkan-drivers-freeworld subpgk (from leigh123linux)
