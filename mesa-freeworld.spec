@@ -524,7 +524,7 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
-* Thu Sep 07 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.2.2-2
+* Mon Sep 07 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.2.2-2
 - enable AMD Anti-Lag Vulkan layer
 
 * Thu Sep 03 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.2.2-1
