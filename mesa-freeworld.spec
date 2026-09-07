@@ -473,7 +473,7 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %{_datadir}/drirc.d/00-lavapipe-defaults.conf
 %{_libdir}/dri-freeworld/libVkLayer_MESA_device_select.so
 %{_datadir}/vulkan/implicit_layer.d/VkLayer_MESA_device_select.json
-%{_libdir}/libVkLayer_MESA_anti_lag.so
+%{_libdir}/dri-freeworld/libVkLayer_MESA_anti_lag.so
 %{_datadir}/vulkan/implicit_layer.d/VkLayer_MESA_anti_lag.json
 %if 0%{?with_virtio}
 %{_libdir}/dri-freeworld/libvulkan_virtio.so
