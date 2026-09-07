@@ -84,7 +84,7 @@ algorithms and decoding only VC1 algorithm.
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 Version:        26.2.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            https://mesa3d.org
 
@@ -350,7 +350,7 @@ rewrite_wrap_file rustc-hash
 %endif
   -Dvideo-codecs=h264dec,h264enc,h265dec,h265enc,vc1dec,av1dec,av1enc,vp9dec \
   -Dvulkan-drivers=%{?vulkan_drivers} \
-  -Dvulkan-layers=device-select \
+  -Dvulkan-layers=device-select,anti-lag \
   -Dshared-glapi=enabled \
   -Dgles1=enabled \
   -Dgles2=enabled \
@@ -473,6 +473,8 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %{_datadir}/drirc.d/00-lavapipe-defaults.conf
 %{_libdir}/dri-freeworld/libVkLayer_MESA_device_select.so
 %{_datadir}/vulkan/implicit_layer.d/VkLayer_MESA_device_select.json
+%{_libdir}/libVkLayer_MESA_anti_lag.so
+%{_datadir}/vulkan/implicit_layer.d/VkLayer_MESA_anti_lag.json
 %if 0%{?with_virtio}
 %{_libdir}/dri-freeworld/libvulkan_virtio.so
 %{_datadir}/vulkan/icd.d/virtio_icd.*.json
@@ -522,6 +524,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Thu Sep 07 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.2.2-2
+- enable AMD Anti-Lag Vulkan layer
+
 * Thu Sep 03 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.2.2-1
 - Update to 26.2.2
 
