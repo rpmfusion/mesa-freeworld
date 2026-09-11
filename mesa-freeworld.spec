@@ -84,7 +84,7 @@ algorithms and decoding only VC1 algorithm.
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
 Version:        26.2.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            https://mesa3d.org
 
@@ -524,6 +524,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Fri Sep 11 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.2.2-3
+- rebuild for new LLVM
+
 * Mon Sep 07 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.2.2-2
 - enable AMD Anti-Lag Vulkan layer
 
