@@ -84,7 +84,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-Version:        26.2.4
+Version:        26.2.5
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            https://mesa3d.org
@@ -107,11 +107,11 @@ Source2:        org.mesa3d.vaapi.freeworld.metainfo.xml
 # https://gitlab.freedesktop.org/mesa/mesa/-/tree/main/subprojects
 # but we generally want the latest compatible versions
 %global rust_paste_ver 1.0.15
-%global rust_proc_macro2_ver 1.0.106
-%global rust_quote_ver 1.0.44
-%global rust_syn_ver 2.0.115
-%global rust_unicode_ident_ver 1.0.23
-%global rustc_hash_ver 2.1.1
+%global rust_proc_macro2_ver 1.0.107
+%global rust_quote_ver 1.0.47
+%global rust_syn_ver 2.0.119
+%global rust_unicode_ident_ver 1.0.26
+%global rustc_hash_ver 2.1.3
 Source10:       https://crates.io/api/v1/crates/paste/%{rust_paste_ver}/download#/paste-%{rust_paste_ver}.tar.gz
 Source11:       https://crates.io/api/v1/crates/proc-macro2/%{rust_proc_macro2_ver}/download#/proc-macro2-%{rust_proc_macro2_ver}.tar.gz
 Source12:       https://crates.io/api/v1/crates/quote/%{rust_quote_ver}/download#/quote-%{rust_quote_ver}.tar.gz
@@ -180,7 +180,6 @@ BuildRequires:  xtensor-devel
 %endif
 %if 0%{?with_opencl} || 0%{?with_nvk} || 0%{?with_asahi} || 0%{?with_panfrost}
 BuildRequires:  clang-devel
-BuildRequires:  pkgconfig(libclc)
 BuildRequires:  pkgconfig(SPIRV-Tools)
 BuildRequires:  pkgconfig(LLVMSPIRVLib)
 %endif
@@ -193,6 +192,7 @@ BuildRequires:  cargo-rpm-macros
 %endif
 %endif
 %if 0%{?with_opencl}
+BuildRequires:  pkgconfig(libclc)
 BuildRequires:  libstdc++-static
 %endif
 %if 0%{?with_nvk}
@@ -527,6 +527,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Thu Oct 15 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.2.5-1
+- Update to 26.2.5
+
 * Fri Oct 02 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.2.4-1
 - Update to 26.2.4
 - sync a few minior bits with Fedora
