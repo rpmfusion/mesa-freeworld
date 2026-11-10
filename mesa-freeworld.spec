@@ -59,10 +59,10 @@ algorithms and decoding only VC1 algorithm.
 %endif
 
 %if !0%{?rhel}
+%global with_gfxstream 1
 %global with_libunwind 1
 %global with_lmsensors 1
 %global with_virtio    1
-%global with_vulkan_layers_anti_lag 1
 %endif
 
 %ifarch %{valgrind_arches}
@@ -71,7 +71,7 @@ algorithms and decoding only VC1 algorithm.
 %bcond_with valgrind
 %endif
 
-%global vulkan_drivers swrast%{?base_vulkan}%{?intel_platform_vulkan}%{?asahi_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}%{?with_virtio:,virtio}%{?with_d3d12:,microsoft-experimental}
+%global vulkan_drivers swrast%{?base_vulkan}%{?intel_platform_vulkan}%{?asahi_platform_vulkan}%{?extra_platform_vulkan}%{?with_nvk:,nouveau}%{?with_virtio:,virtio}%{?with_gfxstream:,gfxstream}%{?with_d3d12:,microsoft-experimental}
 
 %if 0%{?with_nvk} && 0%{?rhel}
 %global vendor_nvk_crates 1
@@ -84,7 +84,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-Version:        26.2.6
+Version:        26.3.0
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            https://mesa3d.org
@@ -120,7 +120,7 @@ Source14:       https://crates.io/api/v1/crates/unicode-ident/%{rust_unicode_ide
 Source15:       https://crates.io/api/v1/crates/rustc-hash/%{rustc_hash_ver}/download#/rustc-hash-%{rustc_hash_ver}.tar.gz
 %endif
 
-BuildRequires:  meson >= 1.3.0
+BuildRequires:  meson >= 1.4.0
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  gettext
@@ -212,6 +212,9 @@ BuildRequires:  pkgconfig(vulkan)
 %endif
 %if 0%{?with_d3d12}
 BuildRequires:  pkgconfig(DirectX-Headers) >= 1.619.1
+%endif
+%if 0%{?with_virtio}
+BuildRequires:  venus-protocol-devel
 %endif
 
 %description
@@ -351,7 +354,7 @@ rewrite_wrap_file rustc-hash
 %endif
   -Dvideo-codecs=h264dec,h264enc,h265dec,h265enc,vc1dec,av1dec,av1enc,vp9dec \
   -Dvulkan-drivers=%{?vulkan_drivers} \
-  -Dvulkan-layers=device-select%{?with_vulkan_layers_anti_lag:,anti-lag} \
+  -Dvulkan-layers=device-select \
   -Dshared-glapi=enabled \
   -Dgles1=enabled \
   -Dgles2=enabled \
@@ -474,18 +477,19 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %{_datadir}/drirc.d/00-lavapipe-defaults.conf
 %{_libdir}/dri-freeworld/libVkLayer_MESA_device_select.so
 %{_datadir}/vulkan/implicit_layer.d/VkLayer_MESA_device_select.json
-%if 0%{?with_vulkan_layers_anti_lag}
-%{_libdir}/dri-freeworld/libVkLayer_MESA_anti_lag.so
-%{_datadir}/vulkan/implicit_layer.d/VkLayer_MESA_anti_lag.json
-%endif
 %if 0%{?with_virtio}
 %{_libdir}/dri-freeworld/libvulkan_virtio.so
 %{_datadir}/vulkan/icd.d/virtio_icd.*.json
 %{_datadir}/drirc.d/00-venus-defaults.conf
 %endif
+%if 0%{?with_gfxstream}
+%{_libdir}/dri-freeworld/libvulkan_gfxstream.so
+%{_datadir}/vulkan/icd.d/gfxstream_vk_icd.*.json
+%endif
 %if 0%{?with_vulkan_hw}
 %{_libdir}/dri-freeworld/libvulkan_radeon.so
 %{_datadir}/drirc.d/00-radv-defaults.conf
+%{_datadir}/drirc.d/01-radv-performance.conf
 %{_datadir}/vulkan/icd.d/radeon_icd.*.json
 %if 0%{?with_nvk}
 %{_libdir}/dri-freeworld/libvulkan_nouveau.so
@@ -527,6 +531,11 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Tue Nov 10 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.3.0-1
+- Update to 26.3.0
+- sync with Fedora: drop anti-lag, BR venus-protocol-devel, update meson,
+  enable gfxstream
+
 * Wed Oct 28 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.2.6-1
 - Update to 26.2.6
 
