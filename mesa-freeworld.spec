@@ -84,7 +84,7 @@ algorithms and decoding only VC1 algorithm.
 
 Name:           %{srcname}-freeworld
 Summary:        Mesa graphics libraries
-Version:        26.2.6
+Version:        26.2.7
 Release:        1%{?dist}
 License:        MIT AND BSD-3-Clause AND SGI-B-2.0
 URL:            https://mesa3d.org
@@ -527,6 +527,9 @@ echo -e "%{_libdir}/dri-freeworld/ \n" > %{buildroot}%{_sysconfdir}/ld.so.conf.d
 %endif
 
 %changelog
+* Thu Nov 12 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.2.7-1
+- Update to 26.2.7
+
 * Wed Oct 28 2026 Thorsten Leemhuis <fedora@leemhuis.info> - 26.2.6-1
 - Update to 26.2.6
 
